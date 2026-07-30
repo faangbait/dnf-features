@@ -6,7 +6,7 @@
 
 set -e
 
-AWS_CLI_VERSION=${VERSION:-"latest"}
+VERSION=${VERSION:-"latest"}
 VERBOSE=${VERBOSE:-"true"}
 
 AWSCLI_GPG_KEY=FB5DB77FD5C118B80511ADA8A6310ACC4672475C
@@ -195,8 +195,8 @@ install() {
     local scriptSigFile=awscli.sig
 
     # See Linux install docs at https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
-    if [ "${AWS_CLI_VERSION}" != "latest" ]; then
-        local versionStr=-${AWS_CLI_VERSION}
+    if [ "${VERSION}" != "latest" ]; then
+        local versionStr=-${VERSION}
     fi
     # Detect architecture without relying on dpkg (works on Alpine and non-debian systems)
     arch=$(uname -m)
@@ -227,11 +227,11 @@ install() {
 
     # AWS bash completion
     mkdir -p /etc/bash_completion.d
-    cp ./aws_bash_completer /etc/bash_completion.d/aws
+    cp ./scripts/vendor/aws_bash_completer /etc/bash_completion.d/aws
 
     # AWS zsh completion
     mkdir -p /usr/local/share/zsh/site-functions/
-    cp ./aws_zsh_completer.sh /usr/local/share/zsh/site-functions/_aws
+    cp ./scripts/vendor/aws_zsh_completer.sh /usr/local/share/zsh/site-functions/_aws
     sed -i '1s/^/#compdef aws\n/' /usr/local/share/zsh/site-functions/_aws
 
     rm -rf ./aws
@@ -240,8 +240,5 @@ install() {
 echo "(*) Installing AWS CLI..."
 
 install
-
-# Clean up
-rm -rf /var/lib/apt/lists/*
 
 echo "Done!"
