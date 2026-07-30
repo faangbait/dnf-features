@@ -19,20 +19,7 @@
             "description": "Suppress verbose output."
         }
     },
-    "customizations": {
-        "vscode": {
-            "extensions": [
-                // "AmazonWebServices.aws-toolkit-vscode"
-            ],
-            "settings": {
-                "github.copilot.chat.codeGeneration.instructions": [
-                    {
-                        "text": "This dev container includes the AWS CLI along with needed dependencies pre-installed and available on the `PATH`, along with the AWS Toolkit extensions for AWS development."
-                    }
-                ]
-            }
-        }
-    },
+    "customizations": {},
     "installsAfter": [
         "ghcr.io/devcontainers/features/common-utils"
     ]
