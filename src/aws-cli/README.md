@@ -18,12 +18,6 @@ Installs the AWS CLI along with needed dependencies. Best-efforts a dnf install.
 | version | Select or enter an AWS CLI version. | string | latest |
 | verbose | Suppress verbose output. | boolean | true |
 
-## Customizations
-
-### VS Code Extensions
-
-- `AmazonWebServices.aws-toolkit-vscode`
-
 Available versions of the AWS CLI can be found here: https://github.com/aws/aws-cli/blob/v2/CHANGELOG.rst.
 
 ## OS Support
