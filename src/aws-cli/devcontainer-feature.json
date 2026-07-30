@@ -1,7 +1,7 @@
 {
     "name": "AWS CLI (RHEL)",
     "id": "aws-cli",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "Installs the AWS CLI along with needed dependencies. Best-efforts a dnf install.",
     "documentationURL": "https://github.com/faangbait/dnf-features/tree/main/src/aws-cli",
     "options": {
