@@ -19,3 +19,5 @@ This Feature cannot neutralize authority supplied elsewhere. Another Feature, th
 Docker Engine, the CLI, containerd, runc, and RootlessKit are extracted from Docker's official static Linux archives, avoiding Docker CE RPM dependencies unavailable in an unregistered UBI 10 image. UBI 10 supplies `newuidmap`, `newgidmap`, nftables, and the remaining runtime dependencies through its standard repositories. Because UBI 10 does not publish `slirp4netns`, its official static release is installed from the rootless-containers project. Both `dnf` and `microdnf` are supported.
 
 The physical host must enable unprivileged user namespaces (`kernel.unprivileged_userns_clone=1`, where that sysctl exists, and a nonzero `user.max_user_namespaces`).
+
+An outer AppArmor profile that denies RootlessKit's mount-propagation operations is not supported. This Feature intentionally does not set `apparmor=unconfined` to work around such a host policy. Use a compatible host or a narrowly scoped host-local AppArmor profile rather than disabling AppArmor for the entire dev container.
