@@ -1,0 +1,14 @@
+{
+    "ubi10-dnf": {
+        "image": "registry.access.redhat.com/ubi10/ubi:latest",
+        "features": {
+            "terraform": {}
+        }
+    },
+    "ubi10-microdnf": {
+        "image": "registry.access.redhat.com/ubi10/ubi-minimal:latest",
+        "features": {
+            "terraform": {}
+        }
+    }
+}
