@@ -107,6 +107,8 @@ install_archive_binary \
     "${TERRAFORM_ASSET}" \
     "terraform"
 
+echo 'alias tf=terraform' > /etc/profile.d/tf-alias.sh
+
 TFLINT_ASSET="tflint_linux_${RELEASE_ARCH}.zip"
 TFLINT_BASE_URL="https://github.com/terraform-linters/tflint/releases/download/v${TFLINT_VERSION}"
 install_archive_binary \
