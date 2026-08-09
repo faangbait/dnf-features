@@ -31,6 +31,10 @@ Creates child containers using a dedicated Docker daemon inside the dev containe
 
 - `ms-azuretools.vscode-containers`
 
+## Recommendation
+
+**Do not use this Feature unless privileged Docker-in-Docker is an explicit requirement.** For normal image builds and child-container workflows, use [`secure-containers`](../secure-containers) instead. It provides a dedicated rootless Docker daemon without granting the dev container host-root-equivalent privilege.
+
 ## UBI/RHEL support
 
 This Feature is derived from `ghcr.io/devcontainers/features/docker-in-docker` but installs Docker from Docker's official static Linux archive. It supports both the `dnf` package manager in `registry.access.redhat.com/ubi10/ubi` and `microdnf` in `registry.access.redhat.com/ubi10/ubi-minimal`.
@@ -45,7 +49,7 @@ The default configuration has **very high host privilege**. The Feature declares
 
 The dedicated daemon isolates Docker objects: its containers, images, networks, and volumes are separate from the host Docker daemon, and the host Docker socket is not mounted. This reduces accidental interference with host Docker workloads, but it is **logical isolation, not a security boundary**. A privileged dev container can potentially escape its container boundary or modify the host, and workloads launched through its daemon inherit that risk.
 
-Use this Feature only with trusted source code, dependencies, editor extensions, and build steps. It is not suitable for untrusted repositories, multi-tenant environments, or situations where the dev container must be securely isolated from its host. Environments that cannot accept host-level privilege should not enable this Feature's default privileged mode.
+Use this Feature only with trusted source code, dependencies, editor extensions, and build steps, and only when `secure-containers` cannot satisfy the workload. It is not suitable for untrusted repositories, multi-tenant environments, or situations where the dev container must be securely isolated from its host. Environments that cannot accept host-level privilege should use `secure-containers` instead.
 
 Moby packages are not available for UBI 10, so the upstream `moby` option is retained for configuration compatibility but must remain `false`.
 
