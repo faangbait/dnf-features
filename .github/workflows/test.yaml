@@ -28,10 +28,12 @@ jobs:
 
   test-scenarios:
     runs-on: ubuntu-latest
-    continue-on-error: true
     strategy:
       matrix:
-        features: []
+        features:
+          - docker-in-docker
+          - docker-outside-of-docker
+          - secure-containers
     steps:
       - uses: actions/checkout@v4
 

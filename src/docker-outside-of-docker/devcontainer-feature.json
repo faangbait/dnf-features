@@ -1,0 +1,76 @@
+{
+    "id": "docker-outside-of-docker",
+    "version": "1.0.0",
+    "name": "Docker (Docker-outside-of-Docker, RHEL)",
+    "description": "Installs the Docker CLI from the official static Linux binaries and forwards the host Docker socket into the dev container.",
+    "documentationURL": "https://github.com/faangbait/dnf-features/tree/main/src/docker-outside-of-docker",
+    "options": {
+        "version": {
+            "type": "string",
+            "proposals": [
+                "latest"
+            ],
+            "default": "latest",
+            "description": "Select a Docker CE CLI version, or use latest."
+        },
+        "moby": {
+            "type": "boolean",
+            "default": false,
+            "description": "Install Moby instead of Docker CE. Moby RPMs are not available for UBI 10, so true is unsupported."
+        },
+        "mobyBuildxVersion": {
+            "type": "string",
+            "default": "latest",
+            "description": "Install a specific Docker Buildx version, or use latest."
+        },
+        "dockerDashComposeVersion": {
+            "type": "string",
+            "enum": [
+                "none",
+                "latest",
+                "v2"
+            ],
+            "default": "latest",
+            "description": "Install the Docker Compose v2 CLI plugin, or disable it with none."
+        },
+        "installDockerBuildx": {
+            "type": "boolean",
+            "default": true,
+            "description": "Install the Docker Buildx CLI plugin."
+        },
+        "installDockerComposeSwitch": {
+            "type": "boolean",
+            "default": false,
+            "description": "Install a docker-compose compatibility wrapper that invokes Docker Compose v2."
+        },
+        "socketPath": {
+            "type": "string",
+            "default": "/var/run/docker-host.sock",
+            "description": "Path where the host Docker socket is mounted inside the dev container."
+        }
+    },
+    "entrypoint": "/usr/local/share/docker-init.sh",
+    "mounts": [
+        {
+            "source": "/var/run/docker.sock",
+            "target": "/var/run/docker-host.sock",
+            "type": "bind"
+        }
+    ],
+    "securityOpt": [
+        "label=disable"
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-azuretools.vscode-containers"
+            ]
+        }
+    },
+    "installsAfter": [
+        "ghcr.io/devcontainers/features/common-utils"
+    ],
+    "legacyIds": [
+        "docker-from-docker"
+    ]
+}
