@@ -8,7 +8,10 @@ on:
 
 jobs:
   test-scenarios:
-    runs-on: ubuntu-latest
+    # Ubuntu 24.04's host AppArmor policy can block nested unprivileged user
+    # namespaces. Keep the rootless Feature's runtime policy narrow instead of
+    # disabling AppArmor for every consumer merely to accommodate this runner.
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         features:
