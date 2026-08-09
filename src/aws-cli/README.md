@@ -1,7 +1,7 @@
 
 # AWS CLI (RHEL) (aws-cli)
 
-Installs the AWS CLI along with needed dependencies. Best-efforts a dnf install.
+Installs AWS CLI v2 and shell completion with dnf, microdnf, yum, apt, or apk support.
 
 ## Example Usage
 
@@ -16,7 +16,7 @@ Installs the AWS CLI along with needed dependencies. Best-efforts a dnf install.
 | Options Id | Description | Type | Default Value |
 |-----|-----|-----|-----|
 | version | Select or enter an AWS CLI version. | string | latest |
-| verbose | Suppress verbose output. | boolean | true |
+| verbose | Show verbose archive extraction output. | boolean | true |
 
 Available versions of the AWS CLI can be found here: https://github.com/aws/aws-cli/blob/v2/CHANGELOG.rst.
 

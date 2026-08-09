@@ -80,20 +80,38 @@ resolve_user() {
         fi
     fi
 
-    ROOTLESS_UID="$(id -u "${USERNAME}")"
-    ROOTLESS_GID="$(id -g "${USERNAME}")"
-    ROOTLESS_HOME="$(getent passwd "${USERNAME}" | cut -d: -f6)"
-    [ -n "${ROOTLESS_HOME}" ] || fatal "Could not resolve the home directory for ${USERNAME}."
 }
 
 ensure_subordinate_ids() {
     touch /etc/subuid /etc/subgid
-    if ! grep -qE "^${USERNAME}:" /etc/subuid; then
-        echo "${USERNAME}:100000:65536" >> /etc/subuid
-    fi
-    if ! grep -qE "^${USERNAME}:" /etc/subgid; then
-        echo "${USERNAME}:100000:65536" >> /etc/subgid
-    fi
+    ensure_subordinate_id_file /etc/subuid
+    ensure_subordinate_id_file /etc/subgid
+}
+
+ensure_subordinate_id_file() {
+    local file="$1"
+    local candidate=100000
+    local candidate_end existing_start existing_count existing_end
+    local overlap
+
+    awk -F: -v username="${USERNAME}" '$1 == username { found=1 } END { exit !found }' "${file}" && return
+
+    while true; do
+        candidate_end=$((candidate + 65536 - 1))
+        overlap="false"
+        while IFS=: read -r _ existing_start existing_count _; do
+            [[ "${existing_start}" =~ ^[0-9]+$ && "${existing_count}" =~ ^[0-9]+$ ]] || continue
+            existing_end=$((existing_start + existing_count - 1))
+            if [ "${candidate}" -le "${existing_end}" ] && [ "${candidate_end}" -ge "${existing_start}" ]; then
+                candidate=$((existing_end + 1))
+                overlap="true"
+                break
+            fi
+        done < "${file}"
+        [ "${overlap}" = "true" ] || break
+    done
+
+    printf '%s:%s:65536\n' "${USERNAME}" "${candidate}" >> "${file}"
 }
 
 resolve_architecture() {
@@ -118,9 +136,16 @@ resolve_architecture() {
 
 resolve_docker_version() {
     local index_url="https://download.docker.com/linux/static/stable/${DOCKER_ARCH}/"
-    local versions requested
-    versions="$(curl -fsSL "${index_url}" | grep -oE 'docker-[0-9]+\.[0-9]+\.[0-9]+(-[0-9]+)?\.tgz' | sed -E 's/^docker-//; s/\.tgz$//' | sort -Vu)"
-    [ -n "${versions}" ] || fatal "Could not discover Docker versions from ${index_url}."
+    local index engine_versions rootless_versions versions requested version
+    index="$(curl -fsSL "${index_url}")"
+    engine_versions="$(printf '%s' "${index}" | grep -oE 'docker-[0-9]+\.[0-9]+\.[0-9]+(-[0-9]+)?\.tgz' | sed -E 's/^docker-//; s/\.tgz$//' | sort -Vu)"
+    rootless_versions="$(printf '%s' "${index}" | grep -oE 'docker-rootless-extras-[0-9]+\.[0-9]+\.[0-9]+(-[0-9]+)?\.tgz' | sed -E 's/^docker-rootless-extras-//; s/\.tgz$//' | sort -Vu)"
+    versions="$(
+        while IFS= read -r version; do
+            grep -Fxq "${version}" <<< "${rootless_versions}" && printf '%s\n' "${version}"
+        done <<< "${engine_versions}"
+    )"
+    [ -n "${versions}" ] || fatal "Could not discover matching Docker Engine and rootless-extras versions from ${index_url}."
 
     requested="${DOCKER_VERSION#v}"
     if [ "${requested}" = "latest" ]; then
@@ -140,6 +165,19 @@ latest_release_tag() {
     basename "${effective_url}"
 }
 
+verify_release_checksum() {
+    local downloaded_file="$1"
+    local checksum_url="$2"
+    local asset_name="$3"
+    local checksum_file="${TEMP_DIR}/checksums.txt"
+    local checksum
+
+    curl -fsSL "${checksum_url}" -o "${checksum_file}"
+    checksum="$(awk -v asset="${asset_name}" '{ name=$2; sub(/^\*/, "", name); if (name == asset) { print $1; exit } }' "${checksum_file}")"
+    [[ "${checksum}" =~ ^[0-9a-fA-F]{64}$ ]] || fatal "No SHA-256 checksum was published for ${asset_name}."
+    printf '%s  %s\n' "${checksum}" "${downloaded_file}" | sha256sum --check --status - || fatal "SHA-256 verification failed for ${asset_name}."
+}
+
 install_docker_binaries() {
     local archive="${TEMP_DIR}/docker.tgz"
     local url="https://download.docker.com/linux/static/stable/${DOCKER_ARCH}/docker-${RESOLVED_DOCKER_VERSION}.tgz"
@@ -157,33 +195,43 @@ install_rootless_extras() {
 }
 
 install_slirp4netns() {
-    local tag version
+    local tag version asset_name
+    local destination="/usr/local/bin/slirp4netns"
     tag="$(latest_release_tag rootless-containers/slirp4netns)"
     version="${tag#v}"
+    asset_name="slirp4netns-${SLIRP_ARCH}"
     log "Installing slirp4netns ${version} static binary"
-    curl -fsSL "https://github.com/rootless-containers/slirp4netns/releases/download/v${version}/slirp4netns-${SLIRP_ARCH}" -o /usr/local/bin/slirp4netns
-    chmod +x /usr/local/bin/slirp4netns
+    curl -fsSL "https://github.com/rootless-containers/slirp4netns/releases/download/v${version}/${asset_name}" -o "${destination}"
+    verify_release_checksum "${destination}" "https://github.com/rootless-containers/slirp4netns/releases/download/v${version}/SHA256SUMS" "${asset_name}"
+    chmod +x "${destination}"
 }
 
 install_buildx() {
     local version="${BUILDX_VERSION#v}"
+    local asset_name
+    local destination="/usr/local/lib/docker/cli-plugins/docker-buildx"
     if [ "${version}" = "latest" ]; then
         version="$(latest_release_tag docker/buildx)"
         version="${version#v}"
     fi
     [[ "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]] || fatal "Invalid Buildx version: ${BUILDX_VERSION}."
+    asset_name="buildx-v${version}.linux-${BUILDX_ARCH}"
     mkdir -p /usr/local/lib/docker/cli-plugins
-    curl -fsSL "https://github.com/docker/buildx/releases/download/v${version}/buildx-v${version}.linux-${BUILDX_ARCH}" -o /usr/local/lib/docker/cli-plugins/docker-buildx
-    chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx
+    curl -fsSL "https://github.com/docker/buildx/releases/download/v${version}/${asset_name}" -o "${destination}"
+    verify_release_checksum "${destination}" "https://github.com/docker/buildx/releases/download/v${version}/checksums.txt" "${asset_name}"
+    chmod +x "${destination}"
 }
 
 install_compose() {
-    local tag version
+    local tag version asset_name
+    local destination="/usr/local/lib/docker/cli-plugins/docker-compose"
     tag="$(latest_release_tag docker/compose)"
     version="${tag#v}"
+    asset_name="docker-compose-linux-${COMPOSE_ARCH}"
     mkdir -p /usr/local/lib/docker/cli-plugins
-    curl -fsSL "https://github.com/docker/compose/releases/download/v${version}/docker-compose-linux-${COMPOSE_ARCH}" -o /usr/local/lib/docker/cli-plugins/docker-compose
-    chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+    curl -fsSL "https://github.com/docker/compose/releases/download/v${version}/${asset_name}" -o "${destination}"
+    verify_release_checksum "${destination}" "https://github.com/docker/compose/releases/download/v${version}/${asset_name}.sha256" "${asset_name}"
+    chmod +x "${destination}"
 }
 
 install_packages ca-certificates curl gzip iproute nftables procps-ng shadow-utils sudo tar util-linux
@@ -228,21 +276,39 @@ cat > /usr/local/share/secure-containers-init.sh <<EOF
 set -euo pipefail
 
 ROOTLESS_USER="${USERNAME}"
-ROOTLESS_UID="${ROOTLESS_UID}"
-ROOTLESS_GID="${ROOTLESS_GID}"
-ROOTLESS_HOME="${ROOTLESS_HOME}"
-RUNTIME_DIR="/run/user/${ROOTLESS_UID}"
+ROOTLESS_UID="\$(id -u "\${ROOTLESS_USER}")"
+ROOTLESS_GID="\$(id -g "\${ROOTLESS_USER}")"
+ROOTLESS_HOME="\$(getent passwd "\${ROOTLESS_USER}" | cut -d: -f6)"
+[ -n "\${ROOTLESS_HOME}" ] || {
+    echo "(!) Could not resolve the home directory for \${ROOTLESS_USER}." >&2
+    exit 1
+}
+RUNTIME_DIR="/run/user/\${ROOTLESS_UID}"
 DATA_ROOT="/var/lib/secure-containers"
 SOCKET="\${RUNTIME_DIR}/docker.sock"
 PUBLIC_SOCKET="/run/secure-containers/docker.sock"
 LOG_FILE="/tmp/secure-containers-dockerd.log"
+PREPARE_ARGUMENT="__secure_containers_prepare"
 
-if [ "\$(id -u)" -ne 0 ]; then
-    if command -v sudo >/dev/null 2>&1 && sudo -n true >/dev/null 2>&1; then
-        exec sudo -E /usr/local/share/secure-containers-init.sh "\$@"
+prepare_runtime() {
+    mkdir -p /dev/net "\${RUNTIME_DIR}" "\${DATA_ROOT}" /run/secure-containers
+    if [ ! -e /dev/net/tun ]; then
+        mknod /dev/net/tun c 10 200
     fi
-    echo "(!) secure-containers must initialize as root so it can create its private TUN node and then drop privileges." >&2
-    exit 1
+    chmod 0666 /dev/net/tun
+    chown "\${ROOTLESS_UID}:\${ROOTLESS_GID}" "\${RUNTIME_DIR}" "\${DATA_ROOT}"
+    chmod 0700 "\${RUNTIME_DIR}"
+    rm -f "\${SOCKET}" "\${PUBLIC_SOCKET}"
+    ln -s "\${SOCKET}" "\${PUBLIC_SOCKET}"
+}
+
+if [ "\${1:-}" = "\${PREPARE_ARGUMENT}" ]; then
+    if [ "\$(id -u)" -ne 0 ]; then
+        echo "(!) secure-containers runtime preparation must run as root." >&2
+        exit 1
+    fi
+    prepare_runtime
+    exit 0
 fi
 
 if [ -f /proc/sys/kernel/unprivileged_userns_clone ] && [ "\$(cat /proc/sys/kernel/unprivileged_userns_clone)" != "1" ]; then
@@ -254,15 +320,14 @@ if [ -f /proc/sys/user/max_user_namespaces ] && [ "\$(cat /proc/sys/user/max_use
     exit 1
 fi
 
-mkdir -p /dev/net "\${RUNTIME_DIR}" "\${DATA_ROOT}" /run/secure-containers
-if [ ! -e /dev/net/tun ]; then
-    mknod /dev/net/tun c 10 200
+if [ "\$(id -u)" -eq 0 ]; then
+    prepare_runtime
+elif [ "\$(id -u)" -eq "\${ROOTLESS_UID}" ] && command -v sudo >/dev/null 2>&1; then
+    sudo -n /usr/local/share/secure-containers-init.sh "\${PREPARE_ARGUMENT}"
+else
+    echo "(!) secure-containers must start as root or as \${ROOTLESS_USER} with permission to prepare its private runtime paths." >&2
+    exit 1
 fi
-chmod 0666 /dev/net/tun
-chown "\${ROOTLESS_UID}:\${ROOTLESS_GID}" "\${RUNTIME_DIR}" "\${DATA_ROOT}"
-chmod 0700 "\${RUNTIME_DIR}"
-rm -f "\${SOCKET}" "\${PUBLIC_SOCKET}"
-ln -s "\${SOCKET}" "\${PUBLIC_SOCKET}"
 
 daemon_args=(
     rootlesskit
@@ -278,11 +343,19 @@ daemon_args=(
     --firewall-backend=nftables
 )
 
-nohup runuser -u "\${ROOTLESS_USER}" -- env \
-    HOME="\${ROOTLESS_HOME}" \
-    XDG_RUNTIME_DIR="\${RUNTIME_DIR}" \
-    PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
-    "\${daemon_args[@]}" >"\${LOG_FILE}" 2>&1 &
+if [ "\$(id -u)" -eq 0 ]; then
+    nohup runuser -u "\${ROOTLESS_USER}" -- env \
+        HOME="\${ROOTLESS_HOME}" \
+        XDG_RUNTIME_DIR="\${RUNTIME_DIR}" \
+        PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
+        "\${daemon_args[@]}" >"\${LOG_FILE}" 2>&1 &
+else
+    nohup env \
+        HOME="\${ROOTLESS_HOME}" \
+        XDG_RUNTIME_DIR="\${RUNTIME_DIR}" \
+        PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
+        "\${daemon_args[@]}" >"\${LOG_FILE}" 2>&1 &
+fi
 daemon_pid=\$!
 
 docker_ready=false
@@ -307,5 +380,10 @@ exec "\$@"
 EOF
 
 chmod +x /usr/local/share/secure-containers-init.sh
+cat > /etc/sudoers.d/secure-containers <<EOF
+${USERNAME} ALL=(root) NOPASSWD: /usr/local/share/secure-containers-init.sh __secure_containers_prepare
+EOF
+chmod 0440 /etc/sudoers.d/secure-containers
+visudo -cf /etc/sudoers.d/secure-containers >/dev/null
 clean_packages
 log "Secure rootless Docker installation complete for user ${USERNAME}."

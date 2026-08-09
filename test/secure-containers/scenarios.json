@@ -10,5 +10,14 @@
         "features": {
             "secure-containers": {}
         }
+    },
+    "ubi10-dnf-nonroot": {
+        "build": {
+            "dockerfile": "Dockerfile"
+        },
+        "remoteUser": "vscode",
+        "features": {
+            "secure-containers": {}
+        }
     }
 }

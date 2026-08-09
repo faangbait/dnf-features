@@ -1,6 +1,6 @@
 {
     "id": "docker-in-docker",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "name": "Docker (Docker-in-Docker, RHEL)",
     "description": "Creates child containers using a dedicated Docker daemon inside the dev container. Installs Docker from the official static Linux binaries.",
     "documentationURL": "https://github.com/faangbait/dnf-features/tree/main/src/docker-in-docker",

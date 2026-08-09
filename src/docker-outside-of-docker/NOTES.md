@@ -8,7 +8,11 @@ This Feature is derived from `ghcr.io/devcontainers/features/docker-outside-of-d
 
 The static archive avoids Docker CE's RPM dependency on `iptables-nft` or `iptables`, neither of which is available from an unregistered UBI 10 image.
 
+Buildx and Compose downloads are verified against the SHA-256 files published with their GitHub releases. Docker does not publish an adjacent checksum file for its static Linux archive, so the Docker CLI archive itself is obtained directly from `download.docker.com` over HTTPS without an independent checksum.
+
 The host socket is mounted at `/var/run/docker-host.sock`. At container startup the Feature maps its group into the container, or uses a `socat` proxy when the socket is owned by group 0, and exposes it at `/var/run/docker.sock`.
+
+When setting `socketPath` to a different path, also override the Feature's socket mount in `devcontainer.json` so its target is the same path. Feature option values cannot dynamically rewrite a declared mount target.
 
 ## Security Posture
 

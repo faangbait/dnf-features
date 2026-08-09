@@ -9,7 +9,6 @@ set -e
 VERSION=${VERSION:-"latest"}
 VERBOSE=${VERBOSE:-"true"}
 
-AWSCLI_GPG_KEY=FB5DB77FD5C118B80511ADA8A6310ACC4672475C
 AWSCLI_GPG_KEY_MATERIAL="-----BEGIN PGP PUBLIC KEY BLOCK-----
 
 mQINBF2Cr7UBEADJZHcgusOJl7ENSyumXh85z0TRV0xJorM2B/JL0kHOyigQluUG
@@ -51,24 +50,21 @@ install_debian_packages() {
     # Ensure apt is in non-interactive to avoid prompts
     export DEBIAN_FRONTEND=noninteractive
 
-    local package_list=""
-    package_list="${package_list} curl ca-certificates gpg dirmngr unzip bash-completion less"
-
-    local missing_package_list=""
-    local packages=()
-    read -r -a packages <<< "${package_list}"
-    for package in "${packages[@]}"; do
+    local package_list=(curl ca-certificates gpg dirmngr unzip bash-completion less)
+    local missing_packages=()
+    local package
+    for package in "${package_list[@]}"; do
         if ! dpkg-query -W -f='${db:Status-Abbrev}\n' "${package}" 2>/dev/null | grep -q '^ii'; then
-            missing_package_list="${missing_package_list} ${package}"
+            missing_packages+=("${package}")
         fi
     done
 
     # Install the list of missing packages
-    if [ -n "${missing_package_list}" ]; then
-        echo "Packages to verify are installed: ${missing_package_list}"
+    if [ "${#missing_packages[@]}" -gt 0 ]; then
+        echo "Packages to verify are installed: ${missing_packages[*]}"
         rm -rf /var/lib/apt/lists/*
         apt-get update -y
-        apt-get -y install --no-install-recommends ${missing_package_list} 2> >( grep -v 'debconf: delaying package configuration, since apt-utils is not installed' >&2 )
+        apt-get -y install --no-install-recommends "${missing_packages[@]}" 2> >(grep -v 'debconf: delaying package configuration, since apt-utils is not installed' >&2)
     fi
 
     # Clean up
@@ -78,8 +74,6 @@ install_debian_packages() {
 
 # RedHat / RockyLinux / CentOS / Fedora packages
 install_redhat_packages() {
-    local package_list=""
-    local remove_epel="false"
     local install_cmd=microdnf
     if type microdnf > /dev/null 2>&1; then
        install_cmd=microdnf
@@ -94,24 +88,22 @@ install_redhat_packages() {
        exit 1
     fi
     
-    package_list="${package_list} curl ca-certificates gpg dirmngr unzip bash-completion less"
-    
-    local missing_package_list=""
-    local packages=()
-    read -r -a packages <<< "${package_list}"
-    for package in "${packages[@]}"; do
+    local package_list=(curl ca-certificates gpg dirmngr unzip bash-completion less)
+    local missing_packages=()
+    local package
+    for package in "${package_list[@]}"; do
         if ! rpm -q "${package}" >/dev/null 2>&1; then
-            missing_package_list="${missing_package_list} ${package}"
+            missing_packages+=("${package}")
         fi
     done
 
-    if [ -n "${missing_package_list}" ]; then
-        echo "Packages to verify are installed: ${missing_package_list}"
+    if [ "${#missing_packages[@]}" -gt 0 ]; then
+        echo "Packages to verify are installed: ${missing_packages[*]}"
         echo "Running ${install_cmd} install..."
         if [ "${install_cmd}" = "dnf" ]; then
-            ${install_cmd} -y install --allowerasing ${missing_package_list}
+            "${install_cmd}" -y install --allowerasing "${missing_packages[@]}"
         else
-            ${install_cmd} -y install ${missing_package_list}
+            "${install_cmd}" -y install "${missing_packages[@]}"
         fi
     fi
 
@@ -121,20 +113,16 @@ install_redhat_packages() {
 # Alpine Linux packages
 install_alpine_packages() {
     apk update
-    local package_list=""
-
-    package_list="${package_list} curl ca-certificates gnupg unzip bash-completion less"
-
-    local missing_package_list=""
-    local packages=()
-    read -r -a packages <<< "${package_list}"
-    for package in "${packages[@]}"; do
+    local package_list=(curl ca-certificates gnupg unzip bash-completion less)
+    local missing_packages=()
+    local package
+    for package in "${package_list[@]}"; do
         if ! apk info -e "${package}" >/dev/null 2>&1; then
-            missing_package_list="${missing_package_list} ${package}"
+            missing_packages+=("${package}")
         fi
     done
-    if [ -n "${missing_package_list}" ]; then
-        apk add --no-cache ${missing_package_list}
+    if [ "${#missing_packages[@]}" -gt 0 ]; then
+        apk add --no-cache "${missing_packages[@]}"
     fi
 }
 
@@ -208,11 +196,10 @@ install() {
             exit 1
     esac
     local scriptUrl=https://awscli.amazonaws.com/awscli-exe-linux-${architectureStr}${versionStr}.zip
-    curl "${scriptUrl}" -o "${scriptZipFile}"
-    curl "${scriptUrl}.sig" -o "${scriptSigFile}"
+    curl -fsSL "${scriptUrl}" -o "${scriptZipFile}"
+    curl -fsSL "${scriptUrl}.sig" -o "${scriptSigFile}"
 
-    verify_aws_cli_gpg_signature "$scriptZipFile" "$scriptSigFile"
-    if (( $? > 0 )); then
+    if ! verify_aws_cli_gpg_signature "$scriptZipFile" "$scriptSigFile"; then
         echo "Could not verify GPG signature of AWS CLI install script. Make sure you provided a valid version."
         exit 1
     fi

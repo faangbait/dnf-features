@@ -8,6 +8,8 @@ This Feature is derived from `ghcr.io/devcontainers/features/docker-in-docker` b
 
 The static archive avoids Docker CE's RPM dependency on `iptables-nft` or `iptables`, neither of which is available from an unregistered UBI 10 image. Docker 29 or newer is required, and the daemon uses Docker's nftables firewall backend with the UBI-provided `nftables` package.
 
+Buildx and Compose downloads are verified against the SHA-256 files published with their GitHub releases. Docker does not publish adjacent checksum files for its static Linux archives, so the Docker archive itself is obtained directly from `download.docker.com` over HTTPS without an independent checksum.
+
 The Feature starts its own Docker daemon and therefore requires a privileged dev container. Its Docker and containerd state is stored in named volumes scoped to `${devcontainerId}` and survives a rebuild. Removing the dev container does not automatically remove those volumes.
 
 ## Security Posture

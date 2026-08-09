@@ -4,6 +4,10 @@ This Feature starts a dedicated Docker daemon as the selected non-root user insi
 
 The daemon uses RootlessKit and `slirp4netns`. Its child containers run in subordinate user and group ID ranges assigned to the daemon user. When the configured dev-container user is root, the Feature creates a dedicated `securecontainers` user for the daemon. Docker data is retained in a named volume mounted at `/var/lib/secure-containers`.
 
+The daemon user's UID, GID, and home directory are resolved at container startup rather than image build time. This is required because Dev Container tooling can remap the remote user's UID to match the host. For non-root container users, the Feature installs a narrowly scoped `sudoers` rule that permits only the fixed runtime-preparation operation: creating the private TUN node and setting ownership on the daemon's runtime and data paths. The normal container command and daemon still run as the selected non-root user.
+
+RootlessKit disables access to the outer container's loopback interface from child containers. UBI base images also do not provide a systemd user session for cgroup delegation, so the rootless daemon runs without cgroup-based resource control. Do not rely on child-container CPU, memory, or process limits as a security boundary in this configuration.
+
 ## Security Posture
 
 The default settings do **not** grant host-root-equivalent Docker access. The dev container is not privileged, receives no additional Linux capabilities, mounts no host container-engine socket, and mounts no host device. A local `/dev/net/tun` node is created inside the dev container's private `/dev` at startup for userspace networking; it is not passed through from the physical host.
@@ -17,6 +21,8 @@ This Feature cannot neutralize authority supplied elsewhere. Another Feature, th
 ## UBI/RHEL support
 
 Docker Engine, the CLI, containerd, runc, and RootlessKit are extracted from Docker's official static Linux archives, avoiding Docker CE RPM dependencies unavailable in an unregistered UBI 10 image. UBI 10 supplies `newuidmap`, `newgidmap`, nftables, and the remaining runtime dependencies through its standard repositories. Because UBI 10 does not publish `slirp4netns`, its official static release is installed from the rootless-containers project. Both `dnf` and `microdnf` are supported.
+
+Buildx, Compose, and `slirp4netns` downloads are verified against the SHA-256 files published with their GitHub releases. Docker does not publish adjacent checksum files for its static Linux archives, so the Docker and rootless-extras archives are obtained directly from `download.docker.com` over HTTPS without independent checksums.
 
 The physical host must enable unprivileged user namespaces (`kernel.unprivileged_userns_clone=1`, where that sysctl exists, and a nonzero `user.max_user_namespaces`).
 
