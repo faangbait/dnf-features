@@ -1,0 +1,84 @@
+{
+    "id": "secure-containers",
+    "version": "1.0.0",
+    "name": "Secure Containers (Rootless Docker, RHEL)",
+    "description": "Runs a dedicated rootless Docker daemon inside the dev container without mounting a host engine socket or enabling privileged mode.",
+    "documentationURL": "https://github.com/faangbait/dnf-features/tree/main/src/secure-containers",
+    "options": {
+        "version": {
+            "type": "string",
+            "proposals": [
+                "latest"
+            ],
+            "default": "latest",
+            "description": "Select a Docker Engine and CLI version, or use latest. Docker 29 or newer is required."
+        },
+        "moby": {
+            "type": "boolean",
+            "default": false,
+            "description": "Install Moby instead of Docker. Moby RPMs are not available for UBI 10, so true is unsupported."
+        },
+        "mobyBuildxVersion": {
+            "type": "string",
+            "default": "latest",
+            "description": "Install a specific Docker Buildx version, or use latest."
+        },
+        "dockerDashComposeVersion": {
+            "type": "string",
+            "enum": [
+                "none",
+                "latest",
+                "v2"
+            ],
+            "default": "latest",
+            "description": "Install the Docker Compose CLI plugin, or disable it with none."
+        },
+        "installDockerBuildx": {
+            "type": "boolean",
+            "default": true,
+            "description": "Install the Docker Buildx CLI plugin."
+        },
+        "installDockerComposeSwitch": {
+            "type": "boolean",
+            "default": false,
+            "description": "Install a docker-compose compatibility wrapper that invokes the Docker Compose plugin."
+        },
+        "username": {
+            "type": "string",
+            "proposals": [
+                "automatic",
+                "vscode",
+                "node",
+                "codespace"
+            ],
+            "default": "automatic",
+            "description": "Non-root user that owns the rootless daemon. A dedicated securecontainers user is created when the remote user is root."
+        }
+    },
+    "entrypoint": "/usr/local/share/secure-containers-init.sh",
+    "securityOpt": [
+        "seccomp=unconfined",
+        "systempaths=unconfined"
+    ],
+    "containerEnv": {
+        "DOCKER_BUILDKIT": "1",
+        "DOCKER_HOST": "unix:///run/secure-containers/docker.sock"
+    },
+    "mounts": [
+        {
+            "source": "secure-containers-data-${devcontainerId}",
+            "target": "/var/lib/secure-containers",
+            "type": "volume"
+        }
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-azuretools.vscode-containers"
+            ]
+        }
+    },
+    "installsAfter": [
+        "ghcr.io/devcontainers/features/common-utils"
+    ]
+}
