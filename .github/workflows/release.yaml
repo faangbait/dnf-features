@@ -1,10 +1,26 @@
 name: "Release dev container features & Generate Documentation"
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "CI - Test Features"
+    branches:
+      - main
+    types:
+      - completed
+
+concurrency:
+  group: release-devcontainer-features
+  cancel-in-progress: false
 
 jobs:
   deploy:
-    if: ${{ github.ref == 'refs/heads/main' }}
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_run' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -12,8 +28,28 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: "Prepare Feature versions"
+        id: versions
+        run: .github/scripts/prepare-feature-release.sh
+
+      - name: "Commit Feature version bumps"
+        if: steps.versions.outputs.changed == 'true'
+        env:
+          RELEASE_FEATURES: ${{ steps.versions.outputs.features }}
+        run: |
+          set -euo pipefail
+          git config user.email github-actions[bot]@users.noreply.github.com
+          git config user.name github-actions[bot]
+          git add -- src/*/devcontainer-feature.json
+          git commit -m "Automated Feature version bump: ${RELEASE_FEATURES} [skip ci]"
+          git push origin HEAD:main
 
       - name: "Publish Features"
+        if: steps.versions.outputs.release == 'true'
         uses: devcontainers/action@v1
         with:
           publish-features: "true"
@@ -24,6 +60,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create PR for Documentation
+        if: steps.versions.outputs.release == 'true'
         id: push_image_info
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

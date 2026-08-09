@@ -10,6 +10,16 @@ env:
   DEVCONTAINER_CLI_VERSION: "0.88.0"
 
 jobs:
+  prepare-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "Check Feature release versions"
+        run: .github/scripts/prepare-feature-release.sh
+
   test-scenarios:
     runs-on: ubuntu-latest
     strategy:

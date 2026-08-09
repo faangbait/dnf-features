@@ -83,6 +83,12 @@ Installs Terraform 1.15.8, TFLint 0.64.0, and Terraform MCP Server 1.1.0 by defa
 
 Terraform and Terraform MCP Server are installed from HashiCorp's release service, and TFLint is installed from its official GitHub releases. Release archives are verified with their published SHA-256 checksums.
 
+## Releases
+
+After the `CI - Test Features` workflow succeeds on `main`, the release workflow compares each Feature's package files with its current `feature_<id>_<version>` tag. Changed Features receive an automatic patch-version bump, the bump is committed to `main`, and the collection is published. Changes to generated Feature `README.md` files alone do not cause a release.
+
+To make an intentional minor or major release, update `version` in the Feature's `devcontainer-feature.json` as part of the pull request. Because that version does not have a release tag yet, the workflow preserves it instead of applying a patch bump. The release workflow can also be rerun manually if a publish attempt fails.
+
 ## Local tests
 
 Run all Docker scenarios:
