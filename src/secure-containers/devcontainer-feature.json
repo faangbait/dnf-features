@@ -1,6 +1,6 @@
 {
     "id": "secure-containers",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "name": "Secure Containers (Rootless Docker, RHEL)",
     "description": "Runs a dedicated rootless Docker daemon inside the dev container without mounting a host engine socket or enabling privileged mode.",
     "documentationURL": "https://github.com/faangbait/dnf-features/tree/main/src/secure-containers",

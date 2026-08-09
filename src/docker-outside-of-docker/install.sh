@@ -114,6 +114,19 @@ latest_release_tag() {
     basename "${effective_url}"
 }
 
+verify_release_checksum() {
+    local downloaded_file="$1"
+    local checksum_url="$2"
+    local asset_name="$3"
+    local checksum_file="${TEMP_DIR}/checksums.txt"
+    local checksum
+
+    curl -fsSL "${checksum_url}" -o "${checksum_file}"
+    checksum="$(awk -v asset="${asset_name}" '{ name=$2; sub(/^\*/, "", name); if (name == asset) { print $1; exit } }' "${checksum_file}")"
+    [[ "${checksum}" =~ ^[0-9a-fA-F]{64}$ ]] || fatal "No SHA-256 checksum was published for ${asset_name}."
+    printf '%s  %s\n' "${checksum}" "${downloaded_file}" | sha256sum --check --status - || fatal "SHA-256 verification failed for ${asset_name}."
+}
+
 install_docker_cli() {
     local archive="${TEMP_DIR}/docker.tgz"
     local url="https://download.docker.com/linux/static/stable/${DOCKER_ARCH}/docker-${RESOLVED_DOCKER_VERSION}.tgz"
@@ -125,23 +138,30 @@ install_docker_cli() {
 
 install_buildx() {
     local version="${BUILDX_VERSION#v}"
+    local asset_name
+    local destination="/usr/local/lib/docker/cli-plugins/docker-buildx"
     if [ "${version}" = "latest" ]; then
         version="$(latest_release_tag docker/buildx)"
         version="${version#v}"
     fi
     [[ "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]] || fatal "Invalid Buildx version: ${BUILDX_VERSION}."
+    asset_name="buildx-v${version}.linux-${BUILDX_ARCH}"
     mkdir -p /usr/local/lib/docker/cli-plugins
-    curl -fsSL "https://github.com/docker/buildx/releases/download/v${version}/buildx-v${version}.linux-${BUILDX_ARCH}" -o /usr/local/lib/docker/cli-plugins/docker-buildx
-    chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx
+    curl -fsSL "https://github.com/docker/buildx/releases/download/v${version}/${asset_name}" -o "${destination}"
+    verify_release_checksum "${destination}" "https://github.com/docker/buildx/releases/download/v${version}/checksums.txt" "${asset_name}"
+    chmod +x "${destination}"
 }
 
 install_compose() {
-    local tag version
+    local tag version asset_name
+    local destination="/usr/local/lib/docker/cli-plugins/docker-compose"
     tag="$(latest_release_tag docker/compose)"
     version="${tag#v}"
+    asset_name="docker-compose-linux-${COMPOSE_ARCH}"
     mkdir -p /usr/local/lib/docker/cli-plugins
-    curl -fsSL "https://github.com/docker/compose/releases/download/v${version}/docker-compose-linux-${COMPOSE_ARCH}" -o /usr/local/lib/docker/cli-plugins/docker-compose
-    chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+    curl -fsSL "https://github.com/docker/compose/releases/download/v${version}/${asset_name}" -o "${destination}"
+    verify_release_checksum "${destination}" "https://github.com/docker/compose/releases/download/v${version}/${asset_name}.sha256" "${asset_name}"
+    chmod +x "${destination}"
 }
 
 resolve_user

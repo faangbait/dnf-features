@@ -1,8 +1,8 @@
 {
     "name": "AWS CLI (RHEL)",
     "id": "aws-cli",
-    "version": "1.0.3",
-    "description": "Installs the AWS CLI along with needed dependencies. Best-efforts a dnf install.",
+    "version": "1.0.4",
+    "description": "Installs AWS CLI v2 and shell completion with dnf, microdnf, yum, apt, or apk support.",
     "documentationURL": "https://github.com/faangbait/dnf-features/tree/main/src/aws-cli",
     "options": {
         "version": {
@@ -16,7 +16,7 @@
         "verbose": {
             "type": "boolean",
             "default": true,
-            "description": "Suppress verbose output."
+            "description": "Show verbose archive extraction output."
         }
     },
     "customizations": {},

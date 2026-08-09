@@ -1,6 +1,6 @@
 {
     "id": "docker-outside-of-docker",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "name": "Docker (Docker-outside-of-Docker, RHEL)",
     "description": "Installs the Docker CLI from the official static Linux binaries and forwards the host Docker socket into the dev container.",
     "documentationURL": "https://github.com/faangbait/dnf-features/tree/main/src/docker-outside-of-docker",
@@ -46,7 +46,7 @@
         "socketPath": {
             "type": "string",
             "default": "/var/run/docker-host.sock",
-            "description": "Path where the host Docker socket is mounted inside the dev container."
+            "description": "Path where the host Docker socket is mounted inside the dev container. Override the matching mount target when changing this value."
         }
     },
     "entrypoint": "/usr/local/share/docker-init.sh",
