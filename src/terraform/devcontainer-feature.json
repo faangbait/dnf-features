@@ -1,0 +1,37 @@
+{
+    "id": "terraform",
+    "version": "1.0.0",
+    "name": "Terraform Tooling (RHEL)",
+    "description": "Installs Terraform, TFLint, and the Terraform MCP Server from their official release archives.",
+    "documentationURL": "https://github.com/faangbait/dnf-features/tree/main/src/terraform",
+    "options": {
+        "terraform": {
+            "type": "string",
+            "proposals": [
+                "1.15.8"
+            ],
+            "default": "1.15.8",
+            "description": "Terraform CLI version to install."
+        },
+        "tflint": {
+            "type": "string",
+            "proposals": [
+                "0.64.0"
+            ],
+            "default": "0.64.0",
+            "description": "TFLint version to install."
+        },
+        "mcpServer": {
+            "type": "string",
+            "proposals": [
+                "1.1.0"
+            ],
+            "default": "1.1.0",
+            "description": "Terraform MCP Server version to install."
+        }
+    },
+    "customizations": {},
+    "installsAfter": [
+        "ghcr.io/devcontainers/features/common-utils"
+    ]
+}
