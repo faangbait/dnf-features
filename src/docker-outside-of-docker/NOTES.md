@@ -1,3 +1,7 @@
+## Recommendation
+
+**Do not use this Feature unless direct control of an existing host Docker daemon is an explicit requirement.** For normal image builds and child-container workflows, use [`secure-containers`](../secure-containers) instead. It provides a dedicated rootless Docker daemon without exposing the host engine socket.
+
 ## UBI/RHEL support
 
 This Feature is derived from `ghcr.io/devcontainers/features/docker-outside-of-docker` but installs the Docker CLI from Docker's official static Linux archive. It supports both the `dnf` package manager in `registry.access.redhat.com/ubi10/ubi` and `microdnf` in `registry.access.redhat.com/ubi10/ubi-minimal`.
@@ -12,7 +16,7 @@ The default configuration has **effectively administrative access to the host Do
 
 This Feature does not set `"privileged": true`, but socket access should not be treated as meaningfully lower privilege: the daemon can be instructed to perform privileged operations on the caller's behalf. The default `"securityOpt": ["label=disable"]` also disables SELinux labeling for the dev container so the forwarded socket can be used on SELinux hosts.
 
-Use this Feature only with trusted source code, dependencies, editor extensions, and build steps. It is not suitable for untrusted repositories or multi-tenant environments. A rootless host Docker socket can reduce the daemon's host authority, but users of that socket still have full control over the rootless daemon and every resource or file it can access.
+Use this Feature only with trusted source code, dependencies, editor extensions, and build steps, and only when `secure-containers` cannot satisfy the workload. It is not suitable for untrusted repositories or multi-tenant environments. A rootless host Docker socket can reduce the daemon's host authority, but users of that socket still have full control over the rootless daemon and every resource or file it can access.
 
 Moby packages are not available for UBI 10, so the upstream `moby` option is retained for configuration compatibility but must remain `false`.
 
