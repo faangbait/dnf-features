@@ -1,6 +1,6 @@
 {
     "id": "terraform",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "name": "Terraform Tooling (RHEL)",
     "description": "Installs Terraform, TFLint, and the Terraform MCP Server from their official release archives.",
     "documentationURL": "https://github.com/faangbait/dnf-features/tree/main/src/terraform",
