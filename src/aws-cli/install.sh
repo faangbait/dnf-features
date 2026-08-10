@@ -8,6 +8,7 @@ set -e
 
 VERSION=${VERSION:-"latest"}
 VERBOSE=${VERBOSE:-"true"}
+SESSIONMAN=${SESSIONMAN:-"false"}
 
 AWSCLI_GPG_KEY_MATERIAL="-----BEGIN PGP PUBLIC KEY BLOCK-----
 
@@ -22,21 +23,21 @@ lrFj6UwAsGukBTAOxC0l/dnSmZhJ7Z1KmEWilro/gOrjtOxqRQutlIqG22TaqoPG
 fYVN+en3Zwbt97kcgZDwqbuykNt64oZWc4XKCa3mprEGC3IbJTBFqglXmZ7l9ywG
 EEUJYOlb2XrSuPWml39beWdKM8kzr1OjnlOm6+lpTRCBfo0wa9F8YZRhHPAkwKkX
 XDeOGpWRj4ohOx0d2GWkyV5xyN14p2tQOCdOODmz80yUTgRpPVQUtOEhXQARAQAB
-tCFBV1MgQ0xJIFRlYW0gPGF3cy1jbGlAYW1hem9uLmNvbT6JAlQEEwEIAD4WIQT7
-Xbd/1cEYuAURraimMQrMRnJHXAUCXYKvtQIbAwUJB4TOAAULCQgHAgYVCgkICwIE
-FgIDAQIeAQIXgAAKCRCmMQrMRnJHXJIXEAChLUIkg80uPUkGjE3jejvQSA1aWuAM
-yzy6fdpdlRUz6M6nmsUhOExjVIvibEJpzK5mhuSZ4lb0vJ2ZUPgCv4zs2nBd7BGJ
-MxKiWgBReGvTdqZ0SzyYH4PYCJSE732x/Fw9hfnh1dMTXNcrQXzwOmmFNNegG0Ox
-au+VnpcR5Kz3smiTrIwZbRudo1ijhCYPQ7t5CMp9kjC6bObvy1hSIg2xNbMAN/Do
-ikebAl36uA6Y/Uczjj3GxZW4ZWeFirMidKbtqvUz2y0UFszobjiBSqZZHCreC34B
-hw9bFNpuWC/0SrXgohdsc6vK50pDGdV5kM2qo9tMQ/izsAwTh/d/GzZv8H4lV9eO
-tEis+EpR497PaxKKh9tJf0N6Q1YLRHof5xePZtOIlS3gfvsH5hXA3HJ9yIxb8T0H
-QYmVr3aIUes20i6meI3fuV36VFupwfrTKaL7VXnsrK2fq5cRvyJLNzXucg0WAjPF
-RrAGLzY7nP1xeg1a0aeP+pdsqjqlPJom8OCWc1+6DWbg0jsC74WoesAqgBItODMB
-rsal1y/q+bPzpsnWjzHV8+1/EtZmSc8ZUGSJOPkfC7hObnfkl18h+1QtKTjZme4d
-H17gsBJr+opwJw/Zio2LMjQBOqlm3K1A4zFTh7wBC7He6KPQea1p2XAMgtvATtNe
-YLZATHZKTJyiqA==
-=vYOk
+tCFBV1MgQ0xJIFRlYW0gPGF3cy1jbGlAYW1hem9uLmNvbT6JAlQEEwEIAD4CGwMF
+CwkIBwIGFQoJCAsCBBYCAwECHgECF4AWIQT7Xbd/1cEYuAURraimMQrMRnJHXAUC
+akV0ygUJDqP4lQAKCRCmMQrMRnJHXFHjD/9eyZLYcKuQOlLvtqSDtUBiEZf6ZZjM
+i3ygYH8rJNtuToUH+HvSpe819urJCquXhDrlK6N+aqW0hCLtNABJG/vsafIgvIYJ
+hSGgpgtNnQyMV1jViRWqPjbouw8OkYKBThUfT1i2Y+wn58ifs6ODBCmTexWtXspA
+Si+Gt49xDOW0APmbOPnI+a4HJW6tVEo6MWS0WjzpiBayR3d1A4pt4YrPfSdDgpLo
+h2SLQqlRqvvVZJaWBjhkErNFpfsBA06sDcPEOb0G8LBUbR4WOcdvhe5LubJbZuxC
+AG9kNPCVeQP1ixwjgjXKysaxeQ6rv0VzIQgRp6tLVLWhy6AKDNvLjFSsmXZ1Wl08
+Y/RlOHXlzLuQMRE6sR1wOdRxc9TsrNWTGiBK65cvSWOy03JeBkQQ8pesqltiyxI9
+U21kkgiXtTSKNGfKK8pO27D81YANhRqPK7iTp6kuFiY2WtOg90KTMNlIT+Ff85Y2
+b1rHj6Z0SrCkJujhWk3IBPic/wJgz01LEc/OAdUPlby90RJZcIBhSlWhT7mXnXIO
+c0HWlNQrns2s3CTyYwZSiSlYe9ApeLwhjDo8NhbFuCAy61l6O5UsR4AfZxx/rGKv
+2wFb1/RN/P4gNe6vmxZAPjR0AQcwD3tc2McimOLr/22kmPz8IH3I0X7WoSFr0Biz
+E91G7bb0hOb/cA==
+=knv7
 -----END PGP PUBLIC KEY BLOCK-----"
 
 if [ "$(id -u)" -ne 0 ]; then
@@ -51,6 +52,9 @@ install_debian_packages() {
     export DEBIAN_FRONTEND=noninteractive
 
     local package_list=(curl ca-certificates gpg dirmngr unzip bash-completion less)
+    if [ "${SESSIONMAN}" = "true" ]; then
+        package_list+=(cpio rpm2cpio)
+    fi
     local missing_packages=()
     local package
     for package in "${package_list[@]}"; do
@@ -89,6 +93,9 @@ install_redhat_packages() {
     fi
     
     local package_list=(curl ca-certificates gpg dirmngr unzip bash-completion less)
+    if [ "${SESSIONMAN}" = "true" ]; then
+        package_list+=(cpio rpm)
+    fi
     local missing_packages=()
     local package
     for package in "${package_list[@]}"; do
@@ -114,6 +121,9 @@ install_redhat_packages() {
 install_alpine_packages() {
     apk update
     local package_list=(curl ca-certificates gnupg unzip bash-completion less)
+    if [ "${SESSIONMAN}" = "true" ]; then
+        package_list+=(cpio rpm)
+    fi
     local missing_packages=()
     local package
     for package in "${package_list[@]}"; do
@@ -224,8 +234,30 @@ install() {
     rm -rf ./aws
 }
 
+install_session_manager_plugin() {
+    local pluginRpm="session-manager-plugin.rpm"
+    local extractDir
+    extractDir=$(mktemp -d)
+
+    curl -fsSL \
+        https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm \
+        -o "${pluginRpm}"
+
+    rpm2cpio "${pluginRpm}" | (cd "${extractDir}" && cpio -id --quiet)
+    command install -m 0755 \
+        "${extractDir}/usr/local/sessionmanagerplugin/bin/session-manager-plugin" \
+        /usr/local/bin/session-manager-plugin
+
+    rm -rf "${extractDir}" "${pluginRpm}"
+}
+
 echo "(*) Installing AWS CLI..."
 
 install
+
+if [ "${SESSIONMAN}" = "true" ]; then
+    echo "(*) Installing AWS Session Manager plugin..."
+    install_session_manager_plugin
+fi
 
 echo "Done!"
