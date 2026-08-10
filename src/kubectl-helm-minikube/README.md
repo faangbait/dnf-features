@@ -32,6 +32,7 @@ Kubernetes commonly binds services to the node interface rather than localhost. 
 
 This RHEL edition supports RHEL-compatible images with `dnf` or `microdnf`. `bash` is required to execute the installer.
 
+
 ---
 
 _Note: This file was auto-generated from the [devcontainer-feature.json](https://github.com/faangbait/dnf-features/blob/main/src/kubectl-helm-minikube/devcontainer-feature.json).  Add additional notes to a `NOTES.md`._
