@@ -1,0 +1,65 @@
+{
+    "id": "kubectl-helm-minikube",
+    "version": "1.0.0",
+    "name": "Kubectl, Helm, and Minikube (RHEL)",
+    "description": "Installs kubectl, Helm, and optionally Minikube from their official release artifacts on RHEL-compatible images.",
+    "documentationURL": "https://github.com/faangbait/dnf-features/tree/main/src/kubectl-helm-minikube",
+    "options": {
+        "version": {
+            "type": "string",
+            "proposals": [
+                "latest",
+                "none",
+                "1.35",
+                "1.34",
+                "1.33"
+            ],
+            "default": "latest",
+            "description": "Kubernetes kubectl version to install. A major.minor value selects that release line's latest patch."
+        },
+        "helm": {
+            "type": "string",
+            "proposals": [
+                "latest",
+                "none"
+            ],
+            "default": "latest",
+            "description": "Helm version to install."
+        },
+        "minikube": {
+            "type": "string",
+            "proposals": [
+                "latest",
+                "none"
+            ],
+            "default": "latest",
+            "description": "Minikube version to install."
+        },
+        "kubectlFallbackVersion": {
+            "type": "string",
+            "default": "v1.35.1",
+            "description": "Fallback kubectl version used when the latest stable version cannot be fetched."
+        }
+    },
+    "mounts": [
+        {
+            "source": "minikube-config",
+            "target": "/home/vscode/.minikube",
+            "type": "volume"
+        }
+    ],
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "github.copilot.chat.codeGeneration.instructions": [
+                    {
+                        "text": "This dev container includes kubectl, Helm, optionally Minikube, and their needed dependencies on PATH."
+                    }
+                ]
+            }
+        }
+    },
+    "installsAfter": [
+        "ghcr.io/devcontainers/features/common-utils"
+    ]
+}

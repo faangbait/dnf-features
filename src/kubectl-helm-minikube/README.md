@@ -1,0 +1,37 @@
+
+# Kubectl, Helm, and Minikube (RHEL) (kubectl-helm-minikube)
+
+Installs kubectl, Helm, and optionally Minikube from their official release artifacts on RHEL-compatible images.
+
+## Example Usage
+
+```json
+"features": {
+    "ghcr.io/faangbait/dnf-features/kubectl-helm-minikube:1": {}
+}
+```
+
+## Options
+
+| Options Id | Description | Type | Default Value |
+|-----|-----|-----|-----|
+| version | Kubernetes kubectl version to install. A major.minor value selects that release line's latest patch. | string | latest |
+| helm | Helm version to install. | string | latest |
+| minikube | Minikube version to install. | string | latest |
+| kubectlFallbackVersion | Fallback kubectl version used when the latest stable version cannot be fetched. | string | v1.35.1 |
+
+## Minikube runtime
+
+This Feature installs the Minikube client, but it does not install or configure a Minikube driver. Add a container-engine Feature when you intend to start a cluster. The `secure-containers` Feature in this collection is the recommended Docker option.
+
+## Ingress and port forwarding
+
+Kubernetes commonly binds services to the node interface rather than localhost. Use the Minikube node IP when the client supports forwarding `<ip>:<port>`, or use `kubectl port-forward` to expose a service on localhost.
+
+## OS support
+
+This RHEL edition supports RHEL-compatible images with `dnf` or `microdnf`. `bash` is required to execute the installer.
+
+---
+
+_Note: This file was auto-generated from the [devcontainer-feature.json](https://github.com/faangbait/dnf-features/blob/main/src/kubectl-helm-minikube/devcontainer-feature.json).  Add additional notes to a `NOTES.md`._

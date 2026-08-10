@@ -1,0 +1,38 @@
+{
+    "ubi10-dnf": {
+        "image": "registry.access.redhat.com/ubi10/ubi:latest",
+        "features": {
+            "kubectl-helm-minikube": {
+                "version": "1.35.1",
+                "helm": "3.19.0",
+                "minikube": "1.37.0"
+            }
+        }
+    },
+    "ubi10-microdnf": {
+        "image": "registry.access.redhat.com/ubi10/ubi-minimal:latest",
+        "features": {
+            "kubectl-helm-minikube": {
+                "version": "1.35.1",
+                "helm": "3.19.0",
+                "minikube": "1.37.0"
+            }
+        }
+    },
+    "ubi10-options": {
+        "image": "registry.access.redhat.com/ubi10/ubi-minimal:latest",
+        "features": {
+            "kubectl-helm-minikube": {
+                "version": "1.35",
+                "helm": "none",
+                "minikube": "none"
+            }
+        }
+    },
+    "ubi10-defaults": {
+        "image": "registry.access.redhat.com/ubi10/ubi-minimal:latest",
+        "features": {
+            "kubectl-helm-minikube": {}
+        }
+    }
+}
