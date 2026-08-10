@@ -59,6 +59,7 @@
             }
         }
     },
+    "postCreateCommand": "/usr/local/share/sync-local-kubeconfig.sh",
     "installsAfter": [
         "ghcr.io/devcontainers/features/common-utils"
     ]

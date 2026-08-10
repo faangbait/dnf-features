@@ -98,6 +98,14 @@ Installs kubectl, Helm, and optionally Minikube from their official release arti
 
 The Feature installs the Minikube client but not a runtime driver. Pair it with a container-engine Feature, such as `secure-containers`, before starting a Minikube cluster.
 
+To initialize a new container with the host's kubeconfig, add a read-only staging mount. The Feature copies it once into the remote user's home directory and will not overwrite a container kubeconfig that already exists:
+
+```jsonc
+"mounts": [
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.kube,target=/usr/local/share/kube-localhost,type=bind,readonly"
+]
+```
+
 ## Releases
 
 After the `CI - Test Features` workflow succeeds on `main`, the release workflow compares each Feature's package files with its current `feature_<id>_<version>` tag. Changed Features receive an automatic patch-version bump, the bump is committed to `main`, and the collection is published. Changes to generated Feature `README.md` files alone do not cause a release.

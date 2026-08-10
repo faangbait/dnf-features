@@ -7,6 +7,7 @@ HELM_VERSION="${HELM:-latest}"
 MINIKUBE_VERSION="${MINIKUBE:-latest}"
 KUBECTL_FALLBACK_VERSION="${KUBECTLFALLBACKVERSION:-v1.35.1}"
 USERNAME="${USERNAME:-${_REMOTE_USER:-automatic}}"
+FEATURE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 log() {
     echo "(*) $*"
@@ -199,6 +200,8 @@ if [ "${MINIKUBE_VERSION}" != "none" ]; then
     chown -R "${USERNAME}" "${USER_HOME}/.minikube"
     chmod u+rwx "${USER_HOME}/.minikube"
 fi
+
+install -m 0755 "${FEATURE_DIR}/sync-local-kubeconfig.sh" /usr/local/share/sync-local-kubeconfig.sh
 
 "${PACKAGE_MANAGER}" clean all >/dev/null 2>&1 || true
 rm -rf /var/cache/dnf /var/cache/yum
