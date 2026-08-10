@@ -8,7 +8,9 @@
     "ubi10-microdnf": {
         "image": "registry.access.redhat.com/ubi10/ubi-minimal:latest",
         "features": {
-            "aws-cli": {}
+            "aws-cli": {
+                "sessionman": true
+            }
         }
     }
 }
