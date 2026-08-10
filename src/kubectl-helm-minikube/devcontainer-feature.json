@@ -1,8 +1,8 @@
 {
     "id": "kubectl-helm-minikube",
-    "version": "1.0.0",
-    "name": "Kubectl, Helm, and Minikube (RHEL)",
-    "description": "Installs kubectl, Helm, and optionally Minikube from their official release artifacts on RHEL-compatible images.",
+    "version": "1.1.0",
+    "name": "Kubectl, Helm, Minikube, and Calicoctl (RHEL)",
+    "description": "Installs kubectl, Helm, Calicoctl, and optionally Minikube from their official release artifacts on RHEL-compatible images.",
     "documentationURL": "https://github.com/faangbait/dnf-features/tree/main/src/kubectl-helm-minikube",
     "options": {
         "version": {
@@ -35,6 +35,15 @@
             "default": "latest",
             "description": "Minikube version to install."
         },
+        "calicoctl": {
+            "type": "string",
+            "proposals": [
+                "latest",
+                "none"
+            ],
+            "default": "latest",
+            "description": "Calicoctl version to install. Match this to the Calico version running in the target cluster."
+        },
         "kubectlFallbackVersion": {
             "type": "string",
             "default": "v1.35.1",
@@ -53,12 +62,13 @@
             "settings": {
                 "github.copilot.chat.codeGeneration.instructions": [
                     {
-                        "text": "This dev container includes kubectl, Helm, optionally Minikube, and their needed dependencies on PATH."
+                        "text": "This dev container includes kubectl, Helm, Calicoctl, optionally Minikube, and their needed dependencies on PATH."
                     }
                 ]
             }
         }
     },
+    "postCreateCommand": "/usr/local/share/sync-local-kubeconfig.sh",
     "installsAfter": [
         "ghcr.io/devcontainers/features/common-utils"
     ]

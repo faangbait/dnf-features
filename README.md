@@ -85,7 +85,7 @@ Terraform and Terraform MCP Server are installed from HashiCorp's release servic
 
 ## Kubernetes tooling
 
-Installs kubectl, Helm, and optionally Minikube from their official release artifacts. All three version options accept `latest` or `none`; kubectl also accepts a `major.minor` release line and resolves its latest patch.
+Installs kubectl, Helm, Calicoctl, and optionally Minikube from their official release artifacts. All four version options accept `latest` or `none`; kubectl also accepts a `major.minor` release line and resolves its latest patch. Calico recommends pinning `calicoctl` to the version running in the target cluster.
 
 ```jsonc
 {
@@ -97,6 +97,14 @@ Installs kubectl, Helm, and optionally Minikube from their official release arti
 ```
 
 The Feature installs the Minikube client but not a runtime driver. Pair it with a container-engine Feature, such as `secure-containers`, before starting a Minikube cluster.
+
+To initialize a new container with the host's kubeconfig, add a read-only staging mount. The Feature copies it once into the remote user's home directory and will not overwrite a container kubeconfig that already exists:
+
+```jsonc
+"mounts": [
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.kube,target=/usr/local/share/kube-localhost,type=bind,readonly"
+]
+```
 
 ## Releases
 

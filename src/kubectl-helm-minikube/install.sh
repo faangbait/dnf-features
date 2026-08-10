@@ -5,8 +5,10 @@ set -euo pipefail
 KUBECTL_VERSION="${VERSION:-latest}"
 HELM_VERSION="${HELM:-latest}"
 MINIKUBE_VERSION="${MINIKUBE:-latest}"
+CALICOCTL_VERSION="${CALICOCTL:-latest}"
 KUBECTL_FALLBACK_VERSION="${KUBECTLFALLBACKVERSION:-v1.35.1}"
 USERNAME="${USERNAME:-${_REMOTE_USER:-automatic}}"
+FEATURE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 log() {
     echo "(*) $*"
@@ -43,7 +45,7 @@ case "$(uname -m)" in
         RELEASE_ARCH="arm64"
         ;;
     *)
-        fatal "kubectl, Helm, and Minikube are not supported on architecture $(uname -m) by this Feature."
+        fatal "kubectl, Helm, Calicoctl, and Minikube are not supported on architecture $(uname -m) by this Feature."
         ;;
 esac
 
@@ -81,6 +83,21 @@ checksum_file() {
         || fatal "No valid SHA-256 checksum was published at ${checksum_url}."
     printf '%s  %s\n' "${checksum}" "${file}" | sha256sum --check --status - \
         || fatal "SHA-256 verification failed for $(basename "${file}")."
+}
+
+checksum_manifest_file() {
+    local file="$1"
+    local checksum_url="$2"
+    local asset="$3"
+    local manifest_file="${TEMP_DIR}/SHA256SUMS"
+    local checksum
+
+    curl -fsSL "${checksum_url}" -o "${manifest_file}"
+    checksum="$(awk -v asset="${asset}" '$2 == asset { print $1; exit }' "${manifest_file}")"
+    [[ "${checksum}" =~ ^[0-9a-fA-F]{64}$ ]] \
+        || fatal "No valid SHA-256 checksum for ${asset} was published at ${checksum_url}."
+    printf '%s  %s\n' "${checksum}" "${file}" | sha256sum --check --status - \
+        || fatal "SHA-256 verification failed for ${asset}."
 }
 
 resolve_kubectl_version() {
@@ -200,6 +217,20 @@ if [ "${MINIKUBE_VERSION}" != "none" ]; then
     chmod u+rwx "${USER_HOME}/.minikube"
 fi
 
+if [ "${CALICOCTL_VERSION}" != "none" ]; then
+    CALICOCTL_VERSION="$(resolve_release_version "Calicoctl" "projectcalico/calico" "${CALICOCTL_VERSION}")"
+    CALICOCTL_ASSET="calicoctl-linux-${RELEASE_ARCH}"
+    CALICOCTL_BINARY="${TEMP_DIR}/${CALICOCTL_ASSET}"
+    CALICOCTL_RELEASE_URL="https://github.com/projectcalico/calico/releases/download/${CALICOCTL_VERSION}"
+
+    log "Installing Calicoctl ${CALICOCTL_VERSION}."
+    curl -fsSL "${CALICOCTL_RELEASE_URL}/${CALICOCTL_ASSET}" -o "${CALICOCTL_BINARY}"
+    checksum_manifest_file "${CALICOCTL_BINARY}" "${CALICOCTL_RELEASE_URL}/SHA256SUMS" "${CALICOCTL_ASSET}"
+    install -m 0755 "${CALICOCTL_BINARY}" /usr/local/bin/calicoctl
+fi
+
+install -m 0755 "${FEATURE_DIR}/sync-local-kubeconfig.sh" /usr/local/share/sync-local-kubeconfig.sh
+
 "${PACKAGE_MANAGER}" clean all >/dev/null 2>&1 || true
 rm -rf /var/cache/dnf /var/cache/yum
 
@@ -207,4 +238,4 @@ if [ "${MINIKUBE_VERSION}" != "none" ] && ! command -v docker >/dev/null 2>&1; t
     log "Docker was not found. Minikube requires a supported driver before it can start a cluster."
 fi
 
-log "kubectl, Helm, and Minikube installation complete."
+log "kubectl, Helm, Calicoctl, and Minikube installation complete."
