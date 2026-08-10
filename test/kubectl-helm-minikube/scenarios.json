@@ -5,7 +5,8 @@
             "kubectl-helm-minikube": {
                 "version": "1.35.1",
                 "helm": "3.19.0",
-                "minikube": "1.37.0"
+                "minikube": "1.37.0",
+                "calicoctl": "3.32.1"
             }
         }
     },
@@ -15,7 +16,8 @@
             "kubectl-helm-minikube": {
                 "version": "1.35.1",
                 "helm": "3.19.0",
-                "minikube": "1.37.0"
+                "minikube": "1.37.0",
+                "calicoctl": "3.32.1"
             }
         }
     },
@@ -25,7 +27,8 @@
             "kubectl-helm-minikube": {
                 "version": "1.35",
                 "helm": "none",
-                "minikube": "none"
+                "minikube": "none",
+                "calicoctl": "none"
             }
         }
     },

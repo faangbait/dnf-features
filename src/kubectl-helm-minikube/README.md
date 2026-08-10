@@ -1,7 +1,7 @@
 
-# Kubectl, Helm, and Minikube (RHEL) (kubectl-helm-minikube)
+# Kubectl, Helm, Minikube, and Calicoctl (RHEL) (kubectl-helm-minikube)
 
-Installs kubectl, Helm, and optionally Minikube from their official release artifacts on RHEL-compatible images.
+Installs kubectl, Helm, Calicoctl, and optionally Minikube from their official release artifacts on RHEL-compatible images.
 
 ## Example Usage
 
@@ -18,11 +18,16 @@ Installs kubectl, Helm, and optionally Minikube from their official release arti
 | version | Kubernetes kubectl version to install. A major.minor value selects that release line's latest patch. | string | latest |
 | helm | Helm version to install. | string | latest |
 | minikube | Minikube version to install. | string | latest |
+| calicoctl | Calicoctl version to install. Match this to the Calico version running in the target cluster. | string | latest |
 | kubectlFallbackVersion | Fallback kubectl version used when the latest stable version cannot be fetched. | string | v1.35.1 |
 
 ## Minikube runtime
 
 This Feature installs the Minikube client, but it does not install or configure a Minikube driver. Add a container-engine Feature when you intend to start a cluster. The `secure-containers` Feature in this collection is the recommended Docker option.
+
+## Calicoctl version
+
+Calico recommends using a `calicoctl` version that matches the Calico version running in the target cluster. Set the `calicoctl` option to that version, or use `none` when Calicoctl is not needed.
 
 ## Use the host kubeconfig
 

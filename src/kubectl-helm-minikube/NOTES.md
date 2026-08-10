@@ -2,6 +2,10 @@
 
 This Feature installs the Minikube client, but it does not install or configure a Minikube driver. Add a container-engine Feature when you intend to start a cluster. The `secure-containers` Feature in this collection is the recommended Docker option.
 
+## Calicoctl version
+
+Calico recommends using a `calicoctl` version that matches the Calico version running in the target cluster. Set the `calicoctl` option to that version, or use `none` when Calicoctl is not needed.
+
 ## Use the host kubeconfig
 
 To initialize the container from the host's kubeconfig, stage the host `.kube` directory with a read-only bind mount:

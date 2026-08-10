@@ -85,7 +85,7 @@ Terraform and Terraform MCP Server are installed from HashiCorp's release servic
 
 ## Kubernetes tooling
 
-Installs kubectl, Helm, and optionally Minikube from their official release artifacts. All three version options accept `latest` or `none`; kubectl also accepts a `major.minor` release line and resolves its latest patch.
+Installs kubectl, Helm, Calicoctl, and optionally Minikube from their official release artifacts. All four version options accept `latest` or `none`; kubectl also accepts a `major.minor` release line and resolves its latest patch. Calico recommends pinning `calicoctl` to the version running in the target cluster.
 
 ```jsonc
 {

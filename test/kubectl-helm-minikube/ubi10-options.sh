@@ -54,6 +54,7 @@ check_missing_kubeconfig_is_optional() {
 check "kubectl major.minor resolves to a patch release" sh -c "kubectl version --client -o json | grep -Eq '\"gitVersion\": \"v1\\.35\\.[0-9]+'"
 check "Helm can be omitted" sh -c "! command -v helm"
 check "Minikube can be omitted" sh -c "! command -v minikube"
+check "Calicoctl can be omitted" sh -c "! command -v calicoctl"
 check "kubeconfig sync helper is installed" test -x /usr/local/share/sync-local-kubeconfig.sh
 check "staged kubeconfig is copied with private permissions" check_kubeconfig_sync
 check "existing container kubeconfig is not overwritten" check_kubeconfig_not_overwritten
