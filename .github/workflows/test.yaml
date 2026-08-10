@@ -28,6 +28,7 @@ jobs:
           - aws-cli
           - docker-in-docker
           - docker-outside-of-docker
+          - kubectl-helm-minikube
           - terraform
           # RootlessKit mount propagation is denied by the AppArmor profile on
           # GitHub-hosted runners. Do not weaken the Feature to accommodate CI;
