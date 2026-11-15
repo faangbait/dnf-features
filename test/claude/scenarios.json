@@ -15,7 +15,7 @@
         "image": "registry.access.redhat.com/ubi10/ubi:latest",
         "features": {
             "claude": {
-                "agentVersion": "2.0.0"
+                "agentVersion": "2.1.113"
             }
         }
     },

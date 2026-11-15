@@ -204,19 +204,27 @@ install_npm_binary() {
 # Each mapping is "relative/path/under/HOME:finalBinaryName"; pass one per
 # binary the installer produces (e.g. codex also needs codex-code-mode-host).
 # The --version smoke test only runs against the first mapping, since
-# companion binaries aren't necessarily user-facing CLIs.
+# companion binaries aren't necessarily user-facing CLIs. Arguments after a
+# literal -- go to the vendor installer itself, e.g. a version to pin.
 install_curl_binary() {
     local install_script_url="$1" install_env_var="$2"
     shift 2
     [ -n "${install_script_url}" ] || fatal "install_curl_binary requires an installer URL."
     [ -n "${install_env_var}" ] || fatal "install_curl_binary requires the installer's output-directory env var name."
-    [ "$#" -ge 1 ] || fatal "install_curl_binary requires at least one relative_path:binary mapping."
+
+    local mappings=()
+    while [ "$#" -gt 0 ] && [ "$1" != "--" ]; do
+        mappings+=("$1")
+        shift
+    done
+    [ "$#" -eq 0 ] || shift
+    [ "${#mappings[@]}" -ge 1 ] || fatal "install_curl_binary requires at least one relative_path:binary mapping."
 
     # Validate every mapping before installing packages or fetching and
     # running a remote installer, so a malformed call fails with no side
     # effects.
     local mapping
-    for mapping in "$@"; do
+    for mapping in "${mappings[@]}"; do
         # ?*:?* demands a colon with at least one character on either side.
         [[ "${mapping}" == ?*:?* ]] \
             || fatal "Malformed mapping '${mapping}'; expected relative/path/under/HOME:finalBinaryName."
@@ -232,10 +240,15 @@ install_curl_binary() {
     curl -fsSL "${install_script_url}" -o "${installer}"
     chmod 0755 "${installer}"
 
-    env HOME="${build_prefix}/home" "${install_env_var}=${build_prefix}/bin" "${installer}"
+    # The installer's output directory goes on PATH: a vendor installer that
+    # finds its directory missing from PATH may symlink itself into a writable
+    # PATH directory instead -- /usr/local/bin, as root -- leaving links into
+    # this scratch tree that dangle once it is removed.
+    env HOME="${build_prefix}/home" "${install_env_var}=${build_prefix}/bin" \
+        PATH="${build_prefix}/bin:${PATH}" "${installer}" "$@"
 
     local primary_binary="" relative_path binary resolved_source
-    for mapping in "$@"; do
+    for mapping in "${mappings[@]}"; do
         relative_path="${mapping%%:*}"
         binary="${mapping#*:}"
         resolved_source="${build_prefix}/home/${relative_path}"
