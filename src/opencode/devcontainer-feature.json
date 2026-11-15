@@ -19,7 +19,13 @@
             "description": "Space-separated list of opencode plugins (npm packages, optionally @version) to install on container creation, e.g. 'opencode-gitlab-auth'. Best-effort: a plugin that cannot be installed is logged and skipped rather than failing container creation. Leave empty to install none."
         }
     },
-    "customizations": {},
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ankurmathur.opencode-provider-bridge"
+            ]
+        }
+    },
     "installsAfter": [
         "ghcr.io/devcontainers/features/common-utils"
     ],
