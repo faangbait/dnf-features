@@ -24,4 +24,12 @@ PERSIST_DIR=/usr/local/lib/dnf-features/claude
 mkdir -p "${PERSIST_DIR}"
 install -m 0755 "${SCRIPT_DIR}/scripts/postcreate.sh" "${PERSIST_DIR}/postcreate.sh"
 
+# Feature options exist only in this script's environment, not in the
+# postCreateCommand's, so hand them over in a file postcreate.sh sources.
+{
+    printf 'PLUGINMARKETPLACES=%q\n' "${PLUGINMARKETPLACES:-}"
+    printf 'PLUGINS=%q\n' "${PLUGINS:-}"
+} > "${PERSIST_DIR}/options.env"
+chmod 0644 "${PERSIST_DIR}/options.env"
+
 clean_package_cache

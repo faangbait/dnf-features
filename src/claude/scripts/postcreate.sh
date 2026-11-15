@@ -13,6 +13,10 @@ log() {
     echo "(*) $*"
 }
 
+# Written by install.sh: Feature options are not in this script's environment.
+# shellcheck disable=SC1091
+. /usr/local/lib/dnf-features/claude/options.env
+
 # Both loops are best-effort. Adding a marketplace and installing a plugin
 # need network, and may need credentials, neither of which is guaranteed at
 # container creation; a transient failure must not fail the create.
