@@ -1,0 +1,30 @@
+{
+    "ubi10-dnf": {
+        "image": "registry.access.redhat.com/ubi10/ubi:latest",
+        "features": {
+            "opencode": {}
+        }
+    },
+    "ubi10-microdnf": {
+        "image": "registry.access.redhat.com/ubi10/ubi-minimal:latest",
+        "features": {
+            "opencode": {}
+        }
+    },
+    "ubi10-pinned": {
+        "image": "registry.access.redhat.com/ubi10/ubi:latest",
+        "features": {
+            "opencode": {
+                "agentVersion": "1.18.0"
+            }
+        }
+    },
+    "ubi10-plugins": {
+        "image": "registry.access.redhat.com/ubi10/ubi:latest",
+        "features": {
+            "opencode": {
+                "plugins": "opencode-gitlab-auth"
+            }
+        }
+    }
+}
