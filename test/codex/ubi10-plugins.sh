@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -e
+source dev-container-features-test-lib
+
+# Exercises the pluginMarketplaces/plugins options. install.sh must hand them
+# to postcreate.sh via options.env, and install git for codex to clone with.
+# The plugin side effects are deliberately not asserted: both loops in
+# postcreate.sh are best-effort, so the contract under test is that the
+# container still comes up and the CLI still works whether or not the plugin
+# installs succeeded.
+check "postCreate script is persisted and executable" test -x /usr/local/lib/dnf-features/codex/postcreate.sh
+check "pluginMarketplaces option is persisted for postCreate" grep -qxF "PLUGINMARKETPLACES=anthropics/claude-plugins-official" /usr/local/lib/dnf-features/codex/options.env
+check "plugins option is persisted for postCreate" grep -qxF "PLUGINS=frontend-design@claude-plugins-official" /usr/local/lib/dnf-features/codex/options.env
+check "git is installed for plugin fetches" git --version
+check "Codex CLI is installed" sh -c "command -v codex"
+check "Codex CLI runs" codex --version
+
+reportResults

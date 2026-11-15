@@ -1,0 +1,31 @@
+{
+    "ubi10-dnf": {
+        "image": "registry.access.redhat.com/ubi10/ubi:latest",
+        "features": {
+            "codex": {}
+        }
+    },
+    "ubi10-microdnf": {
+        "image": "registry.access.redhat.com/ubi10/ubi-minimal:latest",
+        "features": {
+            "codex": {}
+        }
+    },
+    "ubi10-pinned": {
+        "image": "registry.access.redhat.com/ubi10/ubi:latest",
+        "features": {
+            "codex": {
+                "agentVersion": "0.165.0"
+            }
+        }
+    },
+    "ubi10-plugins": {
+        "image": "registry.access.redhat.com/ubi10/ubi:latest",
+        "features": {
+            "codex": {
+                "pluginMarketplaces": "anthropics/claude-plugins-official",
+                "plugins": "frontend-design@claude-plugins-official"
+            }
+        }
+    }
+}
