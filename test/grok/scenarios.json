@@ -18,5 +18,14 @@
                 "agentVersion": "1.0.72"
             }
         }
+    },
+    "ubi10-plugins": {
+        "image": "registry.access.redhat.com/ubi10/ubi:latest",
+        "features": {
+            "grok": {
+                "pluginMarketplaces": "anthropics/claude-plugins-official",
+                "plugins": "chrome-devtools-mcp@claude-plugins-official"
+            }
+        }
     }
 }

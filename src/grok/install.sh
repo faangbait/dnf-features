@@ -40,4 +40,25 @@ install_curl_binary "${INSTALLER_URL}" GROK_BIN_DIR \
 # The vendor installer also exposes grok as `agent`; keep that name.
 ln -sf grok "${INSTALL_DIR:-/usr/local/bin}/agent"
 
+# grok clones marketplaces and plugins with the git CLI, and probes a new
+# marketplace with git ls-remote, so git is only needed when there is
+# something to fetch.
+if [ -n "${PLUGINMARKETPLACES:-}${PLUGINS:-}" ]; then
+    install_redhat_packages git-core
+fi
+
+# postCreateCommand runs against the running container, long after this
+# build-time scripts/ directory is gone, so its script needs a permanent home.
+PERSIST_DIR=/usr/local/lib/dnf-features/grok
+mkdir -p "${PERSIST_DIR}"
+install -m 0755 "${SCRIPT_DIR}/scripts/postcreate.sh" "${PERSIST_DIR}/postcreate.sh"
+
+# Feature options exist only in this script's environment, not in the
+# postCreateCommand's, so hand them over in a file postcreate.sh sources.
+{
+    printf 'PLUGINMARKETPLACES=%q\n' "${PLUGINMARKETPLACES:-}"
+    printf 'PLUGINS=%q\n' "${PLUGINS:-}"
+} > "${PERSIST_DIR}/options.env"
+chmod 0644 "${PERSIST_DIR}/options.env"
+
 clean_package_cache
