@@ -1,0 +1,21 @@
+{
+    "id": "gemini",
+    "version": "1.0.0",
+    "name": "Antigravity CLI (RHEL)",
+    "description": "Installs Google's Antigravity CLI (agy), verified against its release checksum.",
+    "documentationURL": "https://github.com/faangbait/dnf-features/tree/main/src/gemini",
+    "options": {
+        "agentVersion": {
+            "type": "string",
+            "proposals": [
+                ""
+            ],
+            "default": "",
+            "description": "Antigravity CLI build to install. Leave empty to install the newest release; the build log names it as <version>-<build> (e.g. 1.5.9-4515810895593472), and setting that value pins that exact build. A bare version (e.g. 1.5.9) is only accepted while it is still the newest release. agy updates itself in the background whenever its install directory is writable by the user."
+        }
+    },
+    "customizations": {},
+    "installsAfter": [
+        "ghcr.io/devcontainers/features/common-utils"
+    ]
+}
