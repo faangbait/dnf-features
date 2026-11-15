@@ -1,0 +1,21 @@
+{
+    "id": "grok",
+    "version": "1.0.0",
+    "name": "Grok CLI (RHEL)",
+    "description": "Installs the Grok CLI (xAI) with the vendor installer, as grok and agent.",
+    "documentationURL": "https://github.com/faangbait/dnf-features/tree/main/src/grok",
+    "options": {
+        "agentVersion": {
+            "type": "string",
+            "proposals": [
+                ""
+            ],
+            "default": "",
+            "description": "Grok CLI version to install, e.g. 1.0.77. Leave empty to install the newest stable release at install time; that exact version is pinned and does not float on later rebuilds of the same layer."
+        }
+    },
+    "customizations": {},
+    "installsAfter": [
+        "ghcr.io/devcontainers/features/common-utils"
+    ]
+}
