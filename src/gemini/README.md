@@ -15,7 +15,7 @@ Installs Google's Antigravity CLI (agy), verified against its release checksum.
 
 | Options Id | Description | Type | Default Value |
 |-----|-----|-----|-----|
-| agentVersion | Antigravity CLI build to install. Leave empty to install the newest release; the build log names it as <version>-<build> (e.g. 1.5.9-4515810895593472), and setting that value pins that exact build. A bare version (e.g. 1.5.9) is only accepted while it is still the newest release. agy updates itself in the background whenever its install directory is writable by the user. | string |  |
+| agentVersion | Antigravity CLI build to install. Leave empty to install the newest release; the build log names it as <version>-<build> (e.g. 1.5.9-4515810895593472), and setting that value pins that exact build. A bare version (e.g. 1.5.9) is only accepted while it is still the newest release. agy updates itself in the background whenever its install directory is writable by the user. | string | - |
 
 
 
