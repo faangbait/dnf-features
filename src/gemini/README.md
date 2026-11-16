@@ -17,6 +17,13 @@ Installs Google's Antigravity CLI (agy), verified against its release checksum.
 |-----|-----|-----|-----|
 | agentVersion | Antigravity CLI build to install. Leave empty to install the newest release; the build log names it as <version>-<build> (e.g. 1.5.9-4515810895593472), and setting that value pins that exact build. A bare version (e.g. 1.5.9) is only accepted while it is still the newest release. agy updates itself in the background whenever its install directory is writable by the user. | string | - |
 
+## Workspace `_agent` volume
+
+The feature mounts a per-container volume (`gemini-workspace-${devcontainerId}`)
+at `${containerWorkspaceFolder}/_agent`. It survives rebuilds of the same
+dev container and is not shared with any other, so project-level agy state is
+kept out of the host project and out of any config volume shared between
+containers.
 
 
 ---
