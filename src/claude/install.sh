@@ -29,6 +29,7 @@ install -m 0755 "${SCRIPT_DIR}/scripts/postcreate.sh" "${PERSIST_DIR}/postcreate
 {
     printf 'PLUGINMARKETPLACES=%q\n' "${PLUGINMARKETPLACES:-}"
     printf 'PLUGINS=%q\n' "${PLUGINS:-}"
+    printf 'PLUGINSCOPE=%q\n' "${PLUGINSCOPE:-local}"
 } > "${PERSIST_DIR}/options.env"
 chmod 0644 "${PERSIST_DIR}/options.env"
 
