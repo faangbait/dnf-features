@@ -13,6 +13,7 @@ check "postCreate script is persisted and executable" test -x /usr/local/lib/dnf
 check "pluginMarketplaces option is persisted for postCreate" grep -qxF "PLUGINMARKETPLACES=anthropics/claude-plugins-official" /usr/local/lib/dnf-features/grok/options.env
 check "plugins option is persisted for postCreate" grep -qxF "PLUGINS=chrome-devtools-mcp@claude-plugins-official" /usr/local/lib/dnf-features/grok/options.env
 check "git is installed for plugin fetches" git --version
+check "workspace .grok is a mounted volume" sh -c "awk '\$2 ~ /\\/\\.grok\$/ {found=1} END {exit !found}' /proc/mounts"
 check "Grok CLI is installed" sh -c "command -v grok"
 check "Grok CLI runs" grok --version
 
