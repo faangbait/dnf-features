@@ -17,6 +17,16 @@ log() {
 # shellcheck disable=SC1091
 . /usr/local/lib/dnf-features/codex/options.env
 
+# The workspace .codex directory is a per-container volume (see "mounts" in
+# devcontainer-feature.json), so state codex writes there neither lands in the
+# host project nor reaches other containers. A new volume mounts root-owned;
+# claim it so codex can write without sudo.
+workspace_dir="${PWD}/.codex"
+if [ -d "${workspace_dir}" ] && [ "$(stat -c %u "${workspace_dir}")" != "$(id -u)" ]; then
+    sudo chown "$(id -u):$(id -g)" "${workspace_dir}" \
+        || log "Could not take ownership of ${workspace_dir}; continuing."
+fi
+
 # Both loops are best-effort. Adding a marketplace and installing a plugin
 # need network, and may need credentials, neither of which is guaranteed at
 # container creation; a transient failure must not fail the create.
