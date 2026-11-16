@@ -17,6 +17,16 @@ log() {
 # shellcheck disable=SC1091
 . /usr/local/lib/dnf-features/claude/options.env
 
+# The workspace .claude directory is a per-container volume (see "mounts" in
+# devcontainer-feature.json), so plugin enablement written there with local
+# scope neither lands in the host project nor reaches other containers. A new
+# volume mounts root-owned; claim it so claude can write without sudo.
+workspace_claude="${PWD}/.claude"
+if [ -d "${workspace_claude}" ] && [ "$(stat -c %u "${workspace_claude}")" != "$(id -u)" ]; then
+    sudo chown "$(id -u):$(id -g)" "${workspace_claude}" \
+        || log "Could not take ownership of ${workspace_claude}; continuing."
+fi
+
 # Both loops are best-effort. Adding a marketplace and installing a plugin
 # need network, and may need credentials, neither of which is guaranteed at
 # container creation; a transient failure must not fail the create.
@@ -26,8 +36,11 @@ for marketplace in ${PLUGINMARKETPLACES:-}; do
         || log "Could not add marketplace ${marketplace}; continuing."
 done
 
+# Plugins default to local scope: user scope writes enablement into the config
+# directory, which containers sharing a volume (/var/llms) all read. Marketplaces
+# stay at user scope; they are catalogs, not enablement.
 for plugin in ${PLUGINS:-}; do
     log "Installing Claude Code plugin: ${plugin}"
-    claude plugin install "${plugin}" --scope user \
+    claude plugin install "${plugin}" --scope "${PLUGINSCOPE:-local}" \
         || log "Could not install plugin ${plugin}; continuing."
 done

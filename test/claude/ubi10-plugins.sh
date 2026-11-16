@@ -11,6 +11,8 @@ source dev-container-features-test-lib
 check "postCreate script is persisted and executable" test -x /usr/local/lib/dnf-features/claude/postcreate.sh
 check "pluginMarketplaces option is persisted for postCreate" grep -qxF "PLUGINMARKETPLACES=anthropics/claude-plugins-official" /usr/local/lib/dnf-features/claude/options.env
 check "plugins option is persisted for postCreate" grep -qxF "PLUGINS=chrome-devtools-mcp@claude-plugins-official" /usr/local/lib/dnf-features/claude/options.env
+check "pluginScope defaults to local and is persisted for postCreate" grep -qxF "PLUGINSCOPE=local" /usr/local/lib/dnf-features/claude/options.env
+check "workspace .claude is a mounted volume" sh -c "awk '\$2 ~ /\\/\\.claude\$/ {found=1} END {exit !found}' /proc/mounts"
 check "Claude Code CLI is installed" sh -c "command -v claude"
 check "Claude Code CLI runs" claude --version
 
