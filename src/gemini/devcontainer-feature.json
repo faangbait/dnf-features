@@ -17,5 +17,13 @@
     "customizations": {},
     "installsAfter": [
         "ghcr.io/devcontainers/features/common-utils"
-    ]
+    ],
+    "mounts": [
+        {
+            "type": "volume",
+            "source": "gemini-workspace-${devcontainerId}",
+            "target": "${containerWorkspaceFolder}/_agent"
+        }
+    ],
+    "postCreateCommand": "/usr/local/lib/dnf-features/gemini/postcreate.sh"
 }

@@ -72,4 +72,10 @@ install -D -m 0755 "${BUILD_DIR}/antigravity" "${INSTALL_DIR:-/usr/local/bin}/ag
 command -v agy >/dev/null 2>&1 || fatal "Installation completed but the agy command was not found on PATH."
 agy --version
 
+# postCreateCommand runs against the running container, long after this
+# build-time scripts/ directory is gone, so its script needs a permanent home.
+PERSIST_DIR=/usr/local/lib/dnf-features/gemini
+mkdir -p "${PERSIST_DIR}"
+install -m 0755 "${SCRIPT_DIR}/scripts/postcreate.sh" "${PERSIST_DIR}/postcreate.sh"
+
 clean_package_cache
