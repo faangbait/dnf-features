@@ -1,6 +1,6 @@
 {
     "id": "claude",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "name": "Claude Code CLI (RHEL)",
     "description": "Installs the Claude Code CLI (Anthropic) from npm.",
     "documentationURL": "https://github.com/faangbait/dnf-features/tree/main/src/claude",

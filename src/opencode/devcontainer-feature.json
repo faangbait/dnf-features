@@ -1,6 +1,6 @@
 {
     "id": "opencode",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "name": "opencode CLI (RHEL)",
     "description": "Installs the opencode CLI from npm.",
     "documentationURL": "https://github.com/faangbait/dnf-features/tree/main/src/opencode",
