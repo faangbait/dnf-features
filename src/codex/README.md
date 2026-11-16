@@ -19,6 +19,13 @@ Installs the Codex CLI (OpenAI) from npm.
 | pluginMarketplaces | Space-separated list of Codex plugin marketplaces (owner/repo, git URL, or local path) to add on container creation, e.g. 'anthropics/claude-plugins-official'. Setting this or plugins also installs git. Best-effort: a marketplace that cannot be added is logged and skipped rather than failing container creation. Leave empty to add none. | string | - |
 | plugins | Space-separated list of Codex plugins to install on container creation, as plugin@marketplace, e.g. 'frontend-design@claude-plugins-official'. Each marketplace referenced here must also appear in pluginMarketplaces. Best-effort: a plugin that cannot be installed is logged and skipped rather than failing container creation. Leave empty to install none. | string | - |
 
+## Workspace `.codex` volume
+
+The feature mounts a per-container volume (`codex-workspace-${devcontainerId}`)
+at `${containerWorkspaceFolder}/.codex`. It survives rebuilds of the same
+dev container and is not shared with any other, so project-level codex state is
+kept out of the host project and out of any config volume shared between
+containers.
 
 
 ---

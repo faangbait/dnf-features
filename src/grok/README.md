@@ -19,6 +19,13 @@ Installs the Grok CLI (xAI) with the vendor installer, as grok and agent.
 | pluginMarketplaces | Space-separated list of Grok plugin marketplaces (owner/repo, git URL) to add on container creation, e.g. 'anthropics/claude-plugins-official'. Setting this or plugins also installs git. Best-effort: a marketplace that cannot be added is logged and skipped rather than failing container creation. Leave empty to add none. | string | - |
 | plugins | Space-separated list of Grok plugins to install and trust on container creation, as plugin@marketplace, e.g. 'chrome-devtools-mcp@claude-plugins-official'. Each marketplace referenced here must also appear in pluginMarketplaces. Best-effort: a plugin that cannot be installed is logged and skipped rather than failing container creation. Leave empty to install none. | string | - |
 
+## Workspace `.grok` volume
+
+The feature mounts a per-container volume (`grok-workspace-${devcontainerId}`)
+at `${containerWorkspaceFolder}/.grok`. It survives rebuilds of the same
+dev container and is not shared with any other, so project-level grok state is
+kept out of the host project and out of any config volume shared between
+containers.
 
 
 ---
