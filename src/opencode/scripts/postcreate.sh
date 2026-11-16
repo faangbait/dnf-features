@@ -17,6 +17,16 @@ log() {
 # shellcheck disable=SC1091
 . /usr/local/lib/dnf-features/opencode/options.env
 
+# The workspace .opencode directory is a per-container volume (see "mounts" in
+# devcontainer-feature.json), so state opencode writes there neither lands in the
+# host project nor reaches other containers. A new volume mounts root-owned;
+# claim it so opencode can write without sudo.
+workspace_dir="${PWD}/.opencode"
+if [ -d "${workspace_dir}" ] && [ "$(stat -c %u "${workspace_dir}")" != "$(id -u)" ]; then
+    sudo chown "$(id -u):$(id -g)" "${workspace_dir}" \
+        || log "Could not take ownership of ${workspace_dir}; continuing."
+fi
+
 # Best-effort. Installing a plugin needs network, and may need credentials,
 # neither of which is guaranteed at container creation; a transient failure
 # must not fail the create. opencode plugins are npm packages with no
