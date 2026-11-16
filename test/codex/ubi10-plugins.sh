@@ -13,6 +13,7 @@ check "postCreate script is persisted and executable" test -x /usr/local/lib/dnf
 check "pluginMarketplaces option is persisted for postCreate" grep -qxF "PLUGINMARKETPLACES=anthropics/claude-plugins-official" /usr/local/lib/dnf-features/codex/options.env
 check "plugins option is persisted for postCreate" grep -qxF "PLUGINS=frontend-design@claude-plugins-official" /usr/local/lib/dnf-features/codex/options.env
 check "git is installed for plugin fetches" git --version
+check "workspace .codex is a mounted volume" sh -c "awk '\$2 ~ /\\/\\.codex\$/ {found=1} END {exit !found}' /proc/mounts"
 check "Codex CLI is installed" sh -c "command -v codex"
 check "Codex CLI runs" codex --version
 

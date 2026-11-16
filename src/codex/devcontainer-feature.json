@@ -24,6 +24,13 @@
             "description": "Space-separated list of Codex plugins to install on container creation, as plugin@marketplace, e.g. 'frontend-design@claude-plugins-official'. Each marketplace referenced here must also appear in pluginMarketplaces. Best-effort: a plugin that cannot be installed is logged and skipped rather than failing container creation. Leave empty to install none."
         }
     },
+    "mounts": [
+        {
+            "type": "volume",
+            "source": "codex-workspace-${devcontainerId}",
+            "target": "${containerWorkspaceFolder}/.codex"
+        }
+    ],
     "customizations": {},
     "installsAfter": [
         "ghcr.io/devcontainers/features/common-utils"
