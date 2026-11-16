@@ -10,6 +10,7 @@ source dev-container-features-test-lib
 # plugin installs succeeded.
 check "postCreate script is persisted and executable" test -x /usr/local/lib/dnf-features/opencode/postcreate.sh
 check "plugins option is persisted for postCreate" grep -qxF "PLUGINS=opencode-gitlab-auth" /usr/local/lib/dnf-features/opencode/options.env
+check "workspace .opencode is a mounted volume" sh -c "awk '\$2 ~ /\\/\\.opencode\$/ {found=1} END {exit !found}' /proc/mounts"
 check "opencode CLI is installed" sh -c "command -v opencode"
 check "opencode CLI runs" opencode --version
 
