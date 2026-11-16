@@ -1,6 +1,6 @@
 {
     "id": "codex",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "name": "Codex CLI (RHEL)",
     "description": "Installs the Codex CLI (OpenAI) from npm.",
     "documentationURL": "https://github.com/faangbait/dnf-features/tree/main/src/codex",

@@ -1,6 +1,6 @@
 {
     "id": "gemini",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "name": "Antigravity CLI (RHEL)",
     "description": "Installs Google's Antigravity CLI (agy), verified against its release checksum.",
     "documentationURL": "https://github.com/faangbait/dnf-features/tree/main/src/gemini",
